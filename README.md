@@ -1,4 +1,4 @@
-# httpdispatcher
+# http dispatcher
 Go语言基于[http router](https://github.com/julienschmidt/httprouter)包实现的HTTP调度器，实现了路由组和中间件功能。
 
 ## 基本示例
