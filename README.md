@@ -1,5 +1,5 @@
 # httpdispatcher
-基于golang的http router包实现的http调度器
+Go语言基于http router包实现的HTTP调度器，实现了路由组和中间件功能。
 
 ## 基本示例
 ``` Go
