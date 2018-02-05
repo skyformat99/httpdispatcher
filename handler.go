@@ -25,7 +25,7 @@ func (d *dispatcher) initContext(resp http.ResponseWriter, req *http.Request, pa
 	//执行ctx的初始化函数
 	err := ctx.init()
 	if err != nil {
-		d.logger(err.Error(), 1)
+		d.logger(err.Error(),req.RequestURI, 1)
 		return nil, err
 	}
 
@@ -48,17 +48,17 @@ func (d *dispatcher) serverErrorHandle(resp http.ResponseWriter, req *http.Reque
 		messageType := reflect.TypeOf(message).String()
 		switch messageType {
 		case "string":
-			d.logger(message.(string), 6)
+			d.logger(message.(string),req.RequestURI, 6)
 		case "*errors.errorString":
-			d.logger(message.(error).Error(), 6)
+			d.logger(message.(error).Error(),req.RequestURI, 6)
 		default:
-			d.logger("无法转换消息变量的类型("+messageType+")", 6)
+			d.logger("无法转换消息变量的类型("+messageType+")", req.RequestURI,6)
 		}
 	}
 	if d.Handler.ServerError != nil {
 		ctx, err := d.initContext(resp, req, nil)
 		if err != nil {
-			d.logger(err.Error(), 6)
+			d.logger(err.Error(), req.RequestURI,6)
 			return
 		}
 		d.executeHandler(ctx, d.Handler.ServerError, message)
@@ -73,7 +73,7 @@ func (d *dispatcher) notFoundHandle(resp http.ResponseWriter, req *http.Request)
 	if d.Handler.NotFound != nil {
 		ctx, err := d.initContext(resp, req, nil)
 		if err != nil {
-			d.logger(err.Error(), 6)
+			d.logger(err.Error(), req.RequestURI,6)
 			return
 		}
 		d.executeHandler(ctx, d.Handler.NotFound, nil)
@@ -88,7 +88,7 @@ func (d *dispatcher) methodNotAllowedHandle(resp http.ResponseWriter, req *http.
 	if d.Handler.MethodNotAllowed != nil {
 		ctx, err := d.initContext(resp, req, nil)
 		if err != nil {
-			d.logger(err.Error(), 6)
+			d.logger(err.Error(), req.RequestURI,6)
 			return
 		}
 		d.executeHandler(ctx, d.Handler.MethodNotAllowed, nil)

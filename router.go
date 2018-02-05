@@ -44,7 +44,7 @@ func (r *RouterGroup) GET(path string, handler Handler, hooks ...HookHandler) {
 		for k := range r.hooks {
 			err := r.d.executeHookHandler(ctx, r.hooks[k])
 			if err != nil {
-				r.d.logger(err.Error(), -1)
+				r.d.logger(err.Error(), req.RequestURI,-1)
 				return
 			}
 		}
@@ -52,7 +52,7 @@ func (r *RouterGroup) GET(path string, handler Handler, hooks ...HookHandler) {
 		for k := range hooks {
 			err := r.d.executeHookHandler(ctx, hooks[k])
 			if err != nil {
-				r.d.logger(err.Error(), -1)
+				r.d.logger(err.Error(), req.RequestURI,-1)
 				return
 			}
 		}
