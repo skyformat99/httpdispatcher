@@ -1,5 +1,5 @@
-# http dispatcher
-Go语言基于[http router](https://github.com/julienschmidt/httprouter)包实现的轻量HTTP调度器，没有对http router包做任何修改，仅封装实现了以下功能：
+# HTTP Dispatcher
+使用golang基于[http router](https://github.com/julienschmidt/httprouter)路由包实现的轻量HTTP调度器，没有对http router包做任何修改，仅封装实现了以下功能：
 - [x] 无限层级的路由组
 - [x] 路由中间件（钩子）
 - [x] Context（会话上下文）
@@ -29,40 +29,37 @@ func main() {
 
 	//获得一个调度器实例
 	dispatcher := httpdispatcher.New()
-
-	//定义处理器
-	//404错误处理器
-	dispatcher.Handler.NotFound = func(ctx *httpdispatcher.Content) error {
-		log.Println("404事件后续自行处理")
-		return nil
-	}
-	//405错误处理器
-	dispatcher.Handler.MethodNotAllowed = func(ctx *httpdispatcher.Content) error {
-		log.Println("405事件后续自行处理")
-		return nil
-	}
-	//500错误处理器
-	dispatcher.Handler.ServerError = func(ctx *httpdispatcher.Content) error {
-		log.Println("500事件后续自行处理")
-		return nil
-	}
-	//事件处理器
+	//事件记录配置
+	dispatcher.EventConfig.EnableCaller = true     //开启记录触发事件的源文件及行号(Event.Source的值)
+	dispatcher.EventConfig.NotFound = true         //记录404事件
+	dispatcher.EventConfig.ServerError = true      //记录500事件
+	dispatcher.EventConfig.MethodNotAllowed = true //记录405事件
+	//定义接收事件的处理器
 	dispatcher.Handler.Event = func(e *httpdispatcher.Event) {
 		log.Println("事件来源:", e.Source)
 		log.Println("事件消息:", e.Message)
 		log.Println("事件URI:", e.URI)
 	}
+	//定义404事件处理器
+	dispatcher.Handler.NotFound = func(ctx *httpdispatcher.Content) error {
+		log.Println("404事件后续自行处理")
+		return nil
+	}
+	//定义405事件处理器
+	dispatcher.Handler.MethodNotAllowed = func(ctx *httpdispatcher.Content) error {
+		log.Println("405事件后续自行处理")
+		return nil
+	}
+	//定义500事件处理器
+	dispatcher.Handler.ServerError = func(ctx *httpdispatcher.Content) error {
+		log.Println("500事件后续自行处理")
+		return nil
+	}
 
-	//事件配置
-	dispatcher.EventConfig.EnableCaller = true     //开启记录触发事件的源文件及行号
-	dispatcher.EventConfig.NotFound = true         //记录404事件
-	dispatcher.EventConfig.ServerError = true      //记录500事件
-	dispatcher.EventConfig.MethodNotAllowed = true //记录405事件
-
-	//静态路由
+	//定义静态路由
 	{
 		//定义路由到目录，不支持路由组和中间件
-        //如果第三个参数为false，在直接访问目录时会当做404处理，而不是列出目录下的所有文件
+		//如果第三个参数为false，在直接访问目录时会当做404处理，而不是列出目录下的所有文件
 		dispatcher.Router.PATH("/static", "./static", false)
 		//定义静态路由到文件，不支持路由组和中间件
 		dispatcher.Router.FILE("/logo.png", "./logo.png")
@@ -70,18 +67,20 @@ func main() {
 
 	//普通路由
 	{
-		//定义GET路由，handler为路由处理器，hookHandler为钩子(中间件)处理器
+		//定义GET路由，handler为路由处理器，hookHandler为中间件(钩子)处理器
 		dispatcher.Router.GET("/", handler, hookHandler)
 		//测试处理器中出现panic
 		dispatcher.Router.GET("/panic", testPanic)
 	}
 
-	//路由组
+	//路由组（可无限嵌套）
 	{
-		//定义路由组，并传入中间件
+		//定义路由组，并定义中间件处理器
+		//如果定义了路由组的中间件处理器，则组下的路由处理器执行前都会先执行组的中间件处理器
 		authRouter := dispatcher.Router.GROUP("/secret", hookHandler)
-		//在路由组下面定义一个POST路由，匹配/secret/
-		authRouter.POST("/", handler)
+		//在路由组下面定义一个POST路由
+		//此路由匹配URL：/secret/test
+		authRouter.POST("/test", handler)
 	}
 
 	//定义HTTP服务
@@ -110,7 +109,7 @@ func main() {
 	}
 }
 
-//路由处理器
+//普通的路由处理器，会在中间件处理器全部执行完成之后才最后执行
 func handler(ctx *httpdispatcher.Content) error {
 	//读取上一个处理器存储在ctx里的变量
 	log.Println(ctx.ContextValue("ctx"))
@@ -126,17 +125,35 @@ func testPanic(ctx *httpdispatcher.Content) error {
 	log.Println("抛出panic前的逻辑")
 	panic("panic消息")
 	log.Println("抛出panic后的逻辑")
+
+	//如果return的值不是nil，会触发500事件
+	//return errors.New("出错了")
 	return nil
 }
 
-//钩子(中间件)处理器
+//中间件(钩子)的处理器，优先于普通处理器执行
+//多个中间件处理器的执行顺序与传入的顺序相同
 func hookHandler(ctx *httpdispatcher.Content) error {
-	//return errors.New("如果函数返回值不是nil，不会继续执行后面的handler")
-
 	//在ctx中写入变量传递到下一个处理器
-	ctx.SetContextValue("test", "ok")
+	ctx.SetContextValue("ctx", "ok")
+
+	//执行此函数并且入参值为true，才可继续执行下一个中间件或者最终的处理器
+	//此函数在最终的处理器中执行没有任何意义，仅在中间件处理器中有效
+	ctx.Next(true)
+
+	//如果return的error不是nil也不会继续往下执行别的中间件或者最终的处理器，还会触发500事件
+	//return errors.New("出错了")
 	return nil
 }
+```
+
+## Session
+与[dxvgef/sessions](https://github.com/dxvgef/sessions)包整合实现Session功能，请进入该项目查看示例代码
+
+## 模板引擎
+与[CloudyKit/jet](https://github.com/CloudyKit/jet)包整合实现模板渲染功能
+``` Go
+
 ```
 
 ## Benchmark
