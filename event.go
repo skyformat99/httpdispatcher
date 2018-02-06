@@ -7,16 +7,17 @@ import (
 
 //事件结构
 type Event struct {
-	Source  string //源码文件及行号
-	URI     string //客户端请求的URI
-	Message string //消息
+	Source  string      //源码文件及行号
+	URI     string      //客户端请求的URI
+	Message interface{} //消息
 }
 
 //事件处理器类型
 type EventHandler func(*Event)
 
 //事件记录器
-func (d *Dispatcher) logger(message, uri string, skip int) {
+func (d *Dispatcher) logger(message interface{}, uri string, skip int) {
+	//如果没有指定接收事件的处理器，则直接退出函数
 	if d.Handler.Event == nil {
 		return
 	}
@@ -25,38 +26,28 @@ func (d *Dispatcher) logger(message, uri string, skip int) {
 	event.Message = message
 	event.URI = uri
 
-	if d.EventConfig.EnableCaller == true {
+	if skip >= 0 && d.EventConfig.EnableCaller == true {
 		var file string
 		var line int
 
-		if skip >= 0 {
-			//短文件名
-			_, file, line, _ = runtime.Caller(skip)
-			if d.EventConfig.ShortCaller == true {
-				short := file
-				fileLen := len(file)
-				for i := fileLen - 1; i > 0; i-- {
-					if file[i] == '/' {
-						short = file[i+1:]
-						break
-					}
+		_, file, line, _ = runtime.Caller(skip)
+		//如果要求记录短文件名
+		if d.EventConfig.ShortCaller == true {
+			short := file
+			fileLen := len(file)
+			for i := fileLen - 1; i > 0; i-- {
+				if file[i] == '/' {
+					short = file[i+1:]
+					break
 				}
-				file = short
 			}
+			file = short
+		}
+		if line == 0 {
+			event.Source = ""
+		} else {
 			event.Source = file + ":" + strconv.Itoa(line)
 		}
 	}
-	d.Handler.Event(&event)
-}
-
-//用于记录URL的事件记录器
-func (d *Dispatcher) loggerURL(uri, method, message string) {
-	if d.Handler.Event == nil {
-		return
-	}
-
-	var event Event
-	event.Message = message
-	event.Source = uri + ":" + method
 	d.Handler.Event(&event)
 }
