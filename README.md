@@ -138,3 +138,35 @@ func hookHandler(ctx *httpdispatcher.Content) error {
 	return nil
 }
 ```
+
+## Benchmark
+### 路由注册Benchmark代码
+``` Go
+func BenchmarkTest(b *testing.B) {
+    b.ResetTimer()
+    d := httpdispatcher.New()
+    for i := 0; i < b.N; i++ {
+        d.Router.GET("/"+strconv.Itoa(i), func(ctx *httpdispatcher.Content) error {
+        return nil
+    })
+    
+    //e := echo.New()
+    //for i := 0; i < b.N; i++ {
+    //  e.GET("/"+strconv.Itoa(i), func(ctx echo.Context) error {
+    //  return nil
+    //  })
+    //}
+}
+```
+
+### 路由注册Benchmark结果
+```
+goos: darwin
+goarch: amd64
+-------------------------
+echo
+1000000       1976 ns/op
+-------------------------
+httpdispatcher
+2000000        760 ns/op
+```
