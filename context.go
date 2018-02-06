@@ -2,6 +2,7 @@ package httpdispatcher
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -32,8 +33,9 @@ func (ctx *Content) init() error {
 }
 
 //设置标识，用于继续执行下一个处理器
-func (ctx *Content) Next(flag bool) {
+func (ctx *Content) Next(flag bool) error {
 	ctx.next = flag
+	return nil
 }
 
 //在ctx里存储值，如果key存在则替换值
@@ -44,6 +46,16 @@ func (ctx *Content) SetContextValue(key string, value interface{}) {
 //获取ctx里的值，取出后根据写入的类型自行断言
 func (ctx *Content) ContextValue(key string) interface{} {
 	return ctx.params[key]
+}
+
+//重定向
+func (ctx *Content) Redirect(code int, url string) error {
+	if code < 300 || code > 308 {
+		return errors.New("状态码只能是300-308之间的值")
+	}
+	ctx.ResponseWriter.Header().Set("Location", url)
+	ctx.ResponseWriter.WriteHeader(code)
+	return nil
 }
 
 //获取某个GET参数值
