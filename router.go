@@ -194,9 +194,10 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 	var ctx Content
 	ctx.Request = req
 	ctx.ResponseWriter = resp
+	ctx.dispatcher = r.d
 	if err := ctx.init(); err != nil {
 		//触发500事件
-		r.d.serverErrorHandle(resp, req, err.Error())
+		r.d.panicErrorHandle(resp, req, err.Error())
 		return
 	}
 	//遍历父路由的中间件处理器
@@ -205,7 +206,7 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 		err := r.handlers[k](&ctx)
 		if err != nil {
 			//触发500事件
-			r.d.serverErrorHandle(resp, req, err.Error())
+			r.d.panicErrorHandle(resp, req, err.Error())
 			return
 		}
 		//如果控制器执行完之后ctx的next属性值为false，则不继续循环执行下一个处理器而是退出整个函数
@@ -219,7 +220,7 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 		err := handlers[k](&ctx)
 		if err != nil {
 			//触发500事件
-			r.d.serverErrorHandle(resp, req, err.Error())
+			r.d.panicErrorHandle(resp, req, err.Error())
 			return
 		}
 		//如果控制器执行完之后ctx的next属性值为false，则不继续循环执行下一个处理器而是退出整个函数
@@ -232,6 +233,6 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 	err := handler(&ctx)
 	if err != nil {
 		//触发500事件
-		r.d.serverErrorHandle(resp, req, err.Error())
+		r.d.panicErrorHandle(resp, req, err.Error())
 	}
 }
