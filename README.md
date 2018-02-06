@@ -71,6 +71,10 @@ func main() {
 		dispatcher.Router.GET("/", handler, hookHandler)
 		//测试处理器中出现panic
 		dispatcher.Router.GET("/panic", testPanic)
+		//定义一个重定向路由处理器
+		dispatcher.Router.GET("/redir", func(ctx *httpdispatcher.Content) error {
+			return ctx.Redirect(302, "http://github.com/dxvgef/httpdispatcher")
+		})
 	}
 
 	//路由组（可无限嵌套）
@@ -111,7 +115,7 @@ func main() {
 
 //普通的路由处理器，会在中间件处理器全部执行完成之后才最后执行
 func handler(ctx *httpdispatcher.Content) error {
-    //定义一个结构体用于json序列化后输出给客户端
+	//定义一个结构体用于json序列化后输出给客户端
 	var resp struct {
 		Ctx  string
 		Get  string
@@ -158,6 +162,7 @@ func hookHandler(ctx *httpdispatcher.Content) error {
 	//执行此函数并且入参值为true，才可继续执行下一个中间件或者最终的处理器
 	//此函数在最终的处理器中执行没有任何意义，仅在中间件处理器中有效
 	ctx.Next(true)
+	//return ctx.Next(true)
 
 	//如果return的error不是nil也不会继续往下执行别的中间件或者最终的处理器，还会触发500事件
 	//return errors.New("出错了")
