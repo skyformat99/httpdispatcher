@@ -1,5 +1,13 @@
 # http dispatcher
-Go语言基于[http router](https://github.com/julienschmidt/httprouter)包实现的HTTP调度器，实现了路由组和中间件功能。
+Go语言基于[http router](https://github.com/julienschmidt/httprouter)包实现的轻量HTTP调度器，没有对http router包做任何修改，仅封装实现了以下功能：
+- [x] 无限层级的路由组
+- [x] 路由中间件（钩子）
+- [x] Context（会话上下文）
+- [x] 使用Context在同一会话的处理器间传递变量（`SetContextValue` / `ContextValue`）
+- [x] 使用`PATH()`和`FILE()`替代`httprouter.ServeFiles()`方法，改进如下：
+    * 可禁止列举出目录下的所有文件
+    * 由`Dispacher.Handler.NotFoundHandler`来处理404，调度器本身不会主动输出任何消息给客户端
+  
 
 ## 基本示例
 ``` Go
