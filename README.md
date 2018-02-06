@@ -170,17 +170,119 @@ func hookHandler(ctx *httpdispatcher.Content) error {
 }
 ```
 
+## Logger
+可与[github.com/uber-go/zap](https://github.com/uber-go/zap)包整合实现日志记录功能
+
 ## Session
-与[dxvgef/sessions](https://github.com/dxvgef/sessions)包整合实现Session功能，请进入该项目查看示例代码
+可与[github.com/dxvgef/sessions](https://github.com/dxvgef/sessions)包整合实现Session功能，请进入该项目查看示例代码
 
 ## 模板引擎
-与[CloudyKit/jet](https://github.com/CloudyKit/jet)包整合实现模板渲染功能
+可与[github.com/CloudyKit/jet](https://github.com/CloudyKit/jet)包整合实现模板渲染功能
 ``` Go
+package main
 
+import (
+	"log"
+	"net/http"
+
+	"github.com/dxvgef/httpdispatcher"
+
+	"github.com/CloudyKit/jet"
+)
+
+//定义render对象
+type render struct {
+	jet *jet.Set
+}
+
+var Render render
+
+//执行模板字符串渲染
+func (r *render) ExecuteString(resp http.ResponseWriter, code int, tmpl string, vars jet.VarMap) error {
+	//解释模板字符串
+	t, err := r.jet.Parse("c", tmpl)
+	if err != nil {
+		return err
+	}
+
+	//设置http状态码
+	resp.WriteHeader(code)
+
+	//执行模板渲染并输出给客户端
+	err = t.Execute(resp, vars, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//执行模板文件渲染
+func (r *render) ExecuteFile(resp http.ResponseWriter, code int, tmpl string, vars jet.VarMap) error {
+	//相对于模板文件存放路径加载模板文件
+	t, err := r.jet.GetTemplate(tmpl)
+	if err != nil {
+		return err
+	}
+
+	//设置http状态码
+	resp.WriteHeader(code)
+
+	//执行模板渲染并输出给客户端
+	err = t.Execute(resp, vars, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func main() {
+	log.SetFlags(log.Lshortfile)
+
+	//设置Jet
+	//存放模板文件的路径
+	Render.jet = jet.NewHTMLSet("./templates")
+	//开发模式下每次请求时都重新解析模板，否则直接从缓存读取
+	Render.jet.SetDevelopmentMode(true)
+
+	dispatcher := httpdispatcher.New()
+	dispatcher.EventConfig.EnableCaller = true
+	dispatcher.EventConfig.NotFound = true
+	dispatcher.EventConfig.ServerError = true
+	dispatcher.Handler.Event = func(e *httpdispatcher.Event) {
+		log.Println("事件来源:", e.Source)
+		log.Println("事件消息:", e.Message)
+		log.Println("事件URI:", e.URI)
+	}
+	dispatcher.Handler.NotFound = func(ctx *httpdispatcher.Content) error {
+		log.Println("404事件后续自行处理")
+		return nil
+	}
+	dispatcher.Handler.ServerError = func(ctx *httpdispatcher.Content) error {
+		log.Println("500事件后续自行处理")
+		return nil
+	}
+
+	dispatcher.Router.GET("/", func(ctx *httpdispatcher.Content) error {
+		//声明模板变量
+		vars := make(jet.VarMap)
+		//设置模板变量
+		vars.Set("test", "ok")
+		//渲染模板字符串
+		return Render.ExecuteString(ctx.ResponseWriter, 200, "<div>{{test}}</div>", vars)
+		//渲染模板文件
+		//return Render.ExecuteFile(ctx.ResponseWriter, 200, "index.html", vars)
+	})
+
+	if err := http.ListenAndServe(":8080", dispatcher); err != nil {
+		log.Fatal(err.Error())
+	}
+}
 ```
 
 ## Benchmark
-### 路由注册Benchmark代码
+#### 路由注册Benchmark代码
 ``` Go
 func BenchmarkTest(b *testing.B) {
     b.ResetTimer()
