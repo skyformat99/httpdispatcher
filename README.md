@@ -111,12 +111,30 @@ func main() {
 
 //普通的路由处理器，会在中间件处理器全部执行完成之后才最后执行
 func handler(ctx *httpdispatcher.Content) error {
+    //定义一个结构体用于json序列化后输出给客户端
+	var resp struct {
+		Ctx  string
+		Get  string
+		Post int
+	}
 	//读取上一个处理器存储在ctx里的变量
-	log.Println(ctx.ContextValue("ctx"))
-	//读取GET参数值
-	log.Println(ctx.QueryValue("get").String())
+	resp.Ctx = ctx.ContextValue("ctx").(string)
+	//读取GET参数值并转为string类型
+	resp.Get = ctx.QueryValue("get").String()
 	//读取POST参数值，在转换为int类型时如果出错则用123默认值返回
-	log.Println(ctx.FormValue("post").Int(123))
+	resp.Post, _ = ctx.FormValue("post").Int(123)
+
+	//序列化json
+	b, err := json.Marshal(&resp)
+	if err != nil {
+		return err
+	}
+
+	//输出json
+	ctx.ResponseWriter.WriteHeader(200)
+	ctx.ResponseWriter.Write(b)
+
+	//返回nil表示处理器内的业务逻辑都成功完成，返回非nil值会触发500事件
 	return nil
 }
 
