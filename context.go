@@ -17,6 +17,7 @@ type Content struct {
 	params         map[string]interface{} //ctx参数
 	c              context.Context
 	next           bool //继续往下执行处理器的标识
+	dispatcher     *Dispatcher
 }
 
 //request中的GET/POST等方法的参数值
@@ -55,6 +56,12 @@ func (ctx *Content) Redirect(code int, url string) error {
 	}
 	ctx.ResponseWriter.Header().Set("Location", url)
 	ctx.ResponseWriter.WriteHeader(code)
+	return nil
+}
+
+//控制器return error时使用，用于精准记录源码文件及行号
+func (ctx *Content) Return(err error) error {
+	ctx.dispatcher.logger(err, ctx.Request.Method+":"+ctx.Request.RequestURI, 2)
 	return nil
 }
 
