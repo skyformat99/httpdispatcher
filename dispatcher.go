@@ -6,7 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type dispatcher struct {
+type Dispatcher struct {
 	httpRouter *httprouter.Router
 	Router     *RouterGroup
 	Handler    struct {
@@ -24,8 +24,8 @@ type dispatcher struct {
 	}
 }
 
-func New() *dispatcher {
-	var d dispatcher
+func New() *Dispatcher {
+	var d Dispatcher
 	//实例化httprouter路由
 	d.httpRouter = httprouter.New()
 	//指定各种错误处理
@@ -39,6 +39,6 @@ func New() *dispatcher {
 	return &d
 }
 
-func (d *dispatcher) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+func (d *Dispatcher) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	d.httpRouter.ServeHTTP(resp, req)
 }

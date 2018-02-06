@@ -8,7 +8,7 @@ import (
 //事件结构
 type Event struct {
 	Source  string //源码文件及行号
-	URI string	//客户端请求的URI
+	URI     string //客户端请求的URI
 	Message string //消息
 }
 
@@ -16,7 +16,7 @@ type Event struct {
 type EventHandler func(*Event)
 
 //事件记录器
-func (d *dispatcher) logger(message, uri string, skip int) {
+func (d *Dispatcher) logger(message, uri string, skip int) {
 	if d.Handler.Event == nil {
 		return
 	}
@@ -50,7 +50,7 @@ func (d *dispatcher) logger(message, uri string, skip int) {
 }
 
 //用于记录URL的事件记录器
-func (d *dispatcher) loggerURL(uri, method, message string) {
+func (d *Dispatcher) loggerURL(uri, method, message string) {
 	if d.Handler.Event == nil {
 		return
 	}
