@@ -15,6 +15,7 @@ type Content struct {
 	routerParams   []httprouter.Param     //路由参数
 	params         map[string]interface{} //ctx参数
 	c              context.Context
+	next           bool //继续往下执行处理器的标识
 }
 
 //request中的GET/POST等方法的参数值
@@ -28,6 +29,11 @@ type ReqValue struct {
 func (ctx *Content) init() error {
 	ctx.params = make(map[string]interface{})
 	return ctx.Request.ParseForm()
+}
+
+//设置标识，用于继续执行下一个处理器
+func (ctx *Content) Next(flag bool) {
+	ctx.next = flag
 }
 
 //在ctx里存储值，如果key存在则替换值

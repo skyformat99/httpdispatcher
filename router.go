@@ -100,7 +100,7 @@ func (r *RouterGroup) GET(path string, handler Handler, handlers ...Handler) {
 		}
 	}()
 	r.d.httpRouter.GET(r.basePath+path, func(resp http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		r.handler(resp, req, params, handler, handlers)
+		r.execute(resp, req, params, handler, handlers)
 	})
 }
 
@@ -114,7 +114,7 @@ func (r *RouterGroup) POST(path string, handler Handler, handlers ...Handler) {
 		}
 	}()
 	r.d.httpRouter.POST(r.basePath+path, func(resp http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		r.handler(resp, req, params, handler, handlers)
+		r.execute(resp, req, params, handler, handlers)
 	})
 }
 
@@ -128,7 +128,7 @@ func (r *RouterGroup) PUT(path string, handler Handler, handlers ...Handler) {
 		}
 	}()
 	r.d.httpRouter.PUT(r.basePath+path, func(resp http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		r.handler(resp, req, params, handler, handlers)
+		r.execute(resp, req, params, handler, handlers)
 	})
 }
 
@@ -142,7 +142,7 @@ func (r *RouterGroup) HEAD(path string, handler Handler, handlers ...Handler) {
 		}
 	}()
 	r.d.httpRouter.HEAD(r.basePath+path, func(resp http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		r.handler(resp, req, params, handler, handlers)
+		r.execute(resp, req, params, handler, handlers)
 	})
 }
 
@@ -156,7 +156,7 @@ func (r *RouterGroup) PATCH(path string, handler Handler, handlers ...Handler) {
 		}
 	}()
 	r.d.httpRouter.PATCH(r.basePath+path, func(resp http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		r.handler(resp, req, params, handler, handlers)
+		r.execute(resp, req, params, handler, handlers)
 	})
 }
 
@@ -170,7 +170,7 @@ func (r *RouterGroup) DELETE(path string, handler Handler, handlers ...Handler) 
 		}
 	}()
 	r.d.httpRouter.DELETE(r.basePath+path, func(resp http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		r.handler(resp, req, params, handler, handlers)
+		r.execute(resp, req, params, handler, handlers)
 	})
 }
 
@@ -184,18 +184,19 @@ func (r *RouterGroup) OPTIONS(path string, handler Handler, handlers ...Handler)
 		}
 	}()
 	r.d.httpRouter.OPTIONS(r.basePath+path, func(resp http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		r.handler(resp, req, params, handler, handlers)
+		r.execute(resp, req, params, handler, handlers)
 	})
 }
 
-//构建Handler
-func (r *RouterGroup) handler(resp http.ResponseWriter, req *http.Request, params httprouter.Params, handler Handler, handlers []Handler) {
+//执行Handler
+func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, params httprouter.Params, handler Handler, handlers []Handler) {
 	//初始化ctx
 	var ctx Content
 	ctx.Request = req
 	ctx.ResponseWriter = resp
 	if err := ctx.init(); err != nil {
-		r.d.logger(err.Error(), req.RequestURI, 1)
+		//触发500事件
+		r.d.serverErrorHandle(resp, req, err.Error())
 		return
 	}
 	//遍历父路由的中间件处理器
@@ -203,8 +204,12 @@ func (r *RouterGroup) handler(resp http.ResponseWriter, req *http.Request, param
 		//执行父路由的中间件处理器
 		err := r.handlers[k](&ctx)
 		if err != nil {
-			//记录事件
-			r.d.logger(err.Error(), req.RequestURI, -1)
+			//触发500事件
+			r.d.serverErrorHandle(resp, req, err.Error())
+			return
+		}
+		//如果控制器执行完之后ctx的next属性值为false，则不继续循环执行下一个处理器而是退出整个函数
+		if ctx.next == false {
 			return
 		}
 	}
@@ -213,12 +218,20 @@ func (r *RouterGroup) handler(resp http.ResponseWriter, req *http.Request, param
 		//执行中间件处理器
 		err := handlers[k](&ctx)
 		if err != nil {
-			//记录事件
-			r.d.logger(err.Error(), req.RequestURI, -1)
+			//触发500事件
+			r.d.serverErrorHandle(resp, req, err.Error())
+			return
+		}
+		//如果控制器执行完之后ctx的next属性值为false，则不继续循环执行下一个处理器而是退出整个函数
+		if ctx.next == false {
 			return
 		}
 	}
 
 	//执行处理器
-	handler(&ctx)
+	err := handler(&ctx)
+	if err != nil {
+		//触发500事件
+		r.d.serverErrorHandle(resp, req, err.Error())
+	}
 }
