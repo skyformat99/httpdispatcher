@@ -3,8 +3,10 @@ package httpdispatcher
 import (
 	"context"
 	"errors"
+	"net"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -69,6 +71,19 @@ func (ctx *Content) Return(err error) error {
 		ctx.dispatcher.Handler.ServerError(ctx)
 	}
 	return nil
+}
+
+//获得客户端真实IP
+func (ctx *Content) RealIP() string {
+	ra := ctx.Request.RemoteAddr
+	if ip := ctx.Request.Header.Get("X-Forwarded-For"); ip != "" {
+		ra = strings.Split(ip, ", ")[0]
+	} else if ip := ctx.Request.Header.Get("X-Real-IP"); ip != "" {
+		ra = ip
+	} else {
+		ra, _, _ = net.SplitHostPort(ra)
+	}
+	return ra
 }
 
 //获取某个GET参数值
