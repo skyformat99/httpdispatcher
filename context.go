@@ -63,12 +63,14 @@ func (ctx *Content) Redirect(code int, url string) error {
 
 //控制器return error时使用，用于精准记录源码文件及行号
 func (ctx *Content) Return(err error) error {
-	//记录事件
-	ctx.dispatcher.logger(err, ctx.Request, 2)
-	//如果定义了500事件处理器
-	if ctx.dispatcher.Handler.ServerError != nil {
-		//执行500处理器
-		ctx.dispatcher.Handler.ServerError(ctx)
+	if err != nil {
+		//记录事件
+		ctx.dispatcher.logger(err, ctx.Request, 2)
+		//如果定义了500事件处理器
+		if ctx.dispatcher.Handler.ServerError != nil {
+			//执行500处理器
+			ctx.dispatcher.Handler.ServerError(ctx)
+		}
 	}
 	return nil
 }
