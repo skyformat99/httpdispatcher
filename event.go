@@ -1,6 +1,7 @@
 package httpdispatcher
 
 import (
+	"net"
 	"net/http"
 	"runtime"
 	"strconv"
@@ -32,6 +33,14 @@ func (d *Dispatcher) logger(message interface{}, req *http.Request, skip int) {
 		event.URI = req.RequestURI
 		event.Method = req.Method
 		event.ClientIP = req.RemoteAddr
+		//记录客户端真实IP
+		if ip := req.Header.Get("X-Forwarded-For"); ip != "" {
+			event.ClientIP = strings.Split(ip, ", ")[0]
+		} else if ip := req.Header.Get("X-Real-IP"); ip != "" {
+			event.ClientIP = ip
+		} else {
+			event.ClientIP, _, _ = net.SplitHostPort(event.ClientIP)
+		}
 	}
 
 	//如果开启了记录caller
