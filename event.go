@@ -34,21 +34,28 @@ func (d *Dispatcher) logger(message interface{}, req *http.Request, skip int) {
 		event.ClientIP = req.RemoteAddr
 	}
 
+	//如果开启了记录caller
 	if skip >= 0 && d.EventConfig.EnableCaller == true {
 		var file string
 		var line int
 
+		//获得caller信息
 		_, file, line, _ = runtime.Caller(skip)
-		if strings.HasSuffix(file, "net/http/server.go") == false && d.EventConfig.ShortCaller == true {
-			short := file
-			fileLen := len(file)
-			for i := fileLen - 1; i > 0; i-- {
-				if file[i] == '/' {
-					short = file[i+1:]
-					break
+		//如果能准确记录caller
+		if strings.HasSuffix(file, "net/http/server.go") == false {
+			//如果开启了短caller
+			if d.EventConfig.ShortCaller == true {
+				short := file
+				fileLen := len(file)
+				for i := fileLen - 1; i > 0; i-- {
+					if file[i] == '/' {
+						short = file[i+1:]
+						break
+					}
 				}
+				file = short
 			}
-			file = short
+			//记录caller
 			event.Source = file + ":" + strconv.Itoa(line)
 		}
 	}
