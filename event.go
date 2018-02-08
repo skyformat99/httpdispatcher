@@ -1,22 +1,26 @@
 package httpdispatcher
 
 import (
+	"net/http"
 	"runtime"
 	"strconv"
+	"strings"
 )
 
 //事件结构
 type Event struct {
-	Source  string      //源码文件及行号
-	URI     string      //客户端请求的URI
-	Message interface{} //消息
+	Source   string      //源码文件及行号
+	URI      string      //客户端请求的URI
+	Method   string      //客户端请求的方法
+	ClientIP string      //客户端的IP
+	Message  interface{} //消息
 }
 
 //事件处理器类型
 type EventHandler func(*Event)
 
 //事件记录器
-func (d *Dispatcher) logger(message interface{}, uri string, skip int) {
+func (d *Dispatcher) logger(message interface{}, req *http.Request, skip int) {
 	//如果没有指定接收事件的处理器，则直接退出函数
 	if d.Handler.Event == nil {
 		return
@@ -24,15 +28,18 @@ func (d *Dispatcher) logger(message interface{}, uri string, skip int) {
 
 	var event Event
 	event.Message = message
-	event.URI = uri
+	if req != nil {
+		event.URI = req.RequestURI
+		event.Method = req.Method
+		event.ClientIP = req.RemoteAddr
+	}
 
 	if skip >= 0 && d.EventConfig.EnableCaller == true {
 		var file string
 		var line int
 
 		_, file, line, _ = runtime.Caller(skip)
-		//如果要求记录短文件名
-		if d.EventConfig.ShortCaller == true {
+		if strings.HasSuffix(file, "net/http/server.go") == false && d.EventConfig.ShortCaller == true {
 			short := file
 			fileLen := len(file)
 			for i := fileLen - 1; i > 0; i-- {
@@ -42,10 +49,6 @@ func (d *Dispatcher) logger(message interface{}, uri string, skip int) {
 				}
 			}
 			file = short
-		}
-		if line == 0 {
-			event.Source = ""
-		} else {
 			event.Source = file + ":" + strconv.Itoa(line)
 		}
 	}

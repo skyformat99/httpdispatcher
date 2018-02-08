@@ -10,7 +10,7 @@ type Handler func(*Content) error
 //500(panic)事件处理
 func (d *Dispatcher) panicErrorHandle(resp http.ResponseWriter, req *http.Request, message interface{}) {
 	if message != nil && d.EventConfig.ServerError == true {
-		d.logger(message, req.Method+":"+req.RequestURI, 6)
+		d.logger(message, req, 6)
 	}
 	//如果定义了500事件处理器
 	if d.Handler.ServerError != nil {
@@ -19,7 +19,7 @@ func (d *Dispatcher) panicErrorHandle(resp http.ResponseWriter, req *http.Reques
 		ctx.Request = req
 		ctx.ResponseWriter = resp
 		if err := ctx.init(); err != nil {
-			d.logger(err.Error(), req.Method+":"+req.RequestURI, 6)
+			d.logger(err.Error(), req, 6)
 			return
 		}
 		//执行处理器
@@ -32,7 +32,7 @@ func (d *Dispatcher) notFoundHandle(resp http.ResponseWriter, req *http.Request)
 	//如果开启了404事件记录
 	if d.EventConfig.NotFound == true {
 		//记录事件
-		d.logger(http.StatusText(404), req.Method+":"+req.RequestURI, -1)
+		d.logger(http.StatusText(404), req, -1)
 	}
 	//如果定义了404事件处理器
 	if d.Handler.NotFound != nil {
@@ -41,7 +41,7 @@ func (d *Dispatcher) notFoundHandle(resp http.ResponseWriter, req *http.Request)
 		ctx.Request = req
 		ctx.ResponseWriter = resp
 		if err := ctx.init(); err != nil {
-			d.logger(err.Error(), req.Method+":"+req.RequestURI, 1)
+			d.logger(err.Error(), req, 1)
 			return
 		}
 		//执行处理器
@@ -54,7 +54,7 @@ func (d *Dispatcher) methodNotAllowedHandle(resp http.ResponseWriter, req *http.
 	//如果定义了405事件记录
 	if d.EventConfig.MethodNotAllowed == true {
 		//记录事件
-		d.logger(http.StatusText(405), req.Method+":"+req.RequestURI, -1)
+		d.logger(http.StatusText(405), req, -1)
 	}
 	//如果定义了405事件处理器
 	if d.Handler.MethodNotAllowed != nil {
@@ -63,7 +63,7 @@ func (d *Dispatcher) methodNotAllowedHandle(resp http.ResponseWriter, req *http.
 		ctx.Request = req
 		ctx.ResponseWriter = resp
 		if err := ctx.init(); err != nil {
-			d.logger(err.Error(), req.Method+":"+req.RequestURI, 1)
+			d.logger(err.Error(), req, 1)
 			return
 		}
 

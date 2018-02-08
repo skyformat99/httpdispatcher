@@ -20,7 +20,7 @@ func (r *RouterGroup) PATH(url string, local string, list bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			r.d.logger(err.(string), "", 6)
+			r.d.logger(err.(string), nil, 6)
 			os.Exit(1)
 		}
 	}()
@@ -60,7 +60,7 @@ func (r *RouterGroup) FILE(url string, local string) {
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			r.d.logger(err.(string), "", 6)
+			r.d.logger(err.(string), nil, 6)
 			os.Exit(1)
 		}
 	}()
@@ -95,7 +95,7 @@ func (r *RouterGroup) GET(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			r.d.logger(err.(string), "", 8)
+			r.d.logger(err.(string), nil, 8)
 			os.Exit(1)
 		}
 	}()
@@ -109,7 +109,7 @@ func (r *RouterGroup) POST(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			r.d.logger(err.(string), "", 8)
+			r.d.logger(err.(string), nil, 8)
 			os.Exit(1)
 		}
 	}()
@@ -123,7 +123,7 @@ func (r *RouterGroup) PUT(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			r.d.logger(err.(string), "", 8)
+			r.d.logger(err.(string), nil, 8)
 			os.Exit(1)
 		}
 	}()
@@ -137,7 +137,7 @@ func (r *RouterGroup) HEAD(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			r.d.logger(err.(string), "", 8)
+			r.d.logger(err.(string), nil, 8)
 			os.Exit(1)
 		}
 	}()
@@ -151,7 +151,7 @@ func (r *RouterGroup) PATCH(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			r.d.logger(err.(string), "", 8)
+			r.d.logger(err.(string), nil, 8)
 			os.Exit(1)
 		}
 	}()
@@ -165,7 +165,7 @@ func (r *RouterGroup) DELETE(path string, handler Handler, handlers ...Handler) 
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			r.d.logger(err.(string), "", 8)
+			r.d.logger(err.(string), nil, 8)
 			os.Exit(1)
 		}
 	}()
@@ -179,7 +179,7 @@ func (r *RouterGroup) OPTIONS(path string, handler Handler, handlers ...Handler)
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			r.d.logger(err.(string), "", 8)
+			r.d.logger(err.(string), nil, 8)
 			os.Exit(1)
 		}
 	}()

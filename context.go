@@ -61,7 +61,7 @@ func (ctx *Content) Redirect(code int, url string) error {
 
 //控制器return error时使用，用于精准记录源码文件及行号
 func (ctx *Content) Return(err error) error {
-	ctx.dispatcher.logger(err, ctx.Request.Method+":"+ctx.Request.RequestURI, 2)
+	ctx.dispatcher.logger(err, ctx.Request, 2)
 	return nil
 }
 
