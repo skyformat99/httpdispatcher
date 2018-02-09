@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-//处理器类型
+//Handler 处理器类型
 type Handler func(*Context) error
 
 //500(panic)事件处理
