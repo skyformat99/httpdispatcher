@@ -41,17 +41,17 @@ func main() {
 		log.Println("事件URI:", e.URI)
 	}
 	//定义404事件处理器
-	dispatcher.Handler.NotFound = func(ctx *httpdispatcher.Content) error {
+	dispatcher.Handler.NotFound = func(ctx *httpdispatcher.Context) error {
 		log.Println("404事件后续自行处理")
 		return nil
 	}
 	//定义405事件处理器
-	dispatcher.Handler.MethodNotAllowed = func(ctx *httpdispatcher.Content) error {
+	dispatcher.Handler.MethodNotAllowed = func(ctx *httpdispatcher.Context) error {
 		log.Println("405事件后续自行处理")
 		return nil
 	}
 	//定义500事件处理器
-	dispatcher.Handler.ServerError = func(ctx *httpdispatcher.Content) error {
+	dispatcher.Handler.ServerError = func(ctx *httpdispatcher.Context) error {
 		log.Println("500事件后续自行处理")
 		return nil
 	}
@@ -72,7 +72,7 @@ func main() {
 		//测试处理器中出现panic
 		dispatcher.Router.GET("/panic", testPanic)
 		//定义一个重定向路由处理器
-		dispatcher.Router.GET("/redir", func(ctx *httpdispatcher.Content) error {
+		dispatcher.Router.GET("/redir", func(ctx *httpdispatcher.Context) error {
 			return ctx.Redirect(302, "http://github.com/dxvgef/httpdispatcher")
 		})
 	}
@@ -114,7 +114,7 @@ func main() {
 }
 
 //普通的路由处理器，会在中间件处理器全部执行完成之后才最后执行
-func handler(ctx *httpdispatcher.Content) error {
+func handler(ctx *httpdispatcher.Context) error {
 	//定义一个结构体用于json序列化后输出给客户端
 	var resp struct {
 		Ctx  string
@@ -143,7 +143,7 @@ func handler(ctx *httpdispatcher.Content) error {
 }
 
 //测试触发panic的路由处理器
-func testPanic(ctx *httpdispatcher.Content) error {
+func testPanic(ctx *httpdispatcher.Context) error {
 	log.Println("抛出panic前的逻辑")
 	panic("panic消息")
 	log.Println("抛出panic后的逻辑")
@@ -155,7 +155,7 @@ func testPanic(ctx *httpdispatcher.Content) error {
 
 //中间件(钩子)的处理器，优先于普通处理器执行
 //多个中间件处理器的执行顺序与传入的顺序相同
-func hookHandler(ctx *httpdispatcher.Content) error {
+func hookHandler(ctx *httpdispatcher.Context) error {
 	//在ctx中写入变量传递到下一个处理器
 	ctx.SetContextValue("ctx", "ok")
 
@@ -255,16 +255,16 @@ func main() {
 		log.Println("事件消息:", e.Message)
 		log.Println("事件URI:", e.URI)
 	}
-	dispatcher.Handler.NotFound = func(ctx *httpdispatcher.Content) error {
+	dispatcher.Handler.NotFound = func(ctx *httpdispatcher.Context) error {
 		log.Println("404事件后续自行处理")
 		return nil
 	}
-	dispatcher.Handler.ServerError = func(ctx *httpdispatcher.Content) error {
+	dispatcher.Handler.ServerError = func(ctx *httpdispatcher.Context) error {
 		log.Println("500事件后续自行处理")
 		return nil
 	}
 
-	dispatcher.Router.GET("/", func(ctx *httpdispatcher.Content) error {
+	dispatcher.Router.GET("/", func(ctx *httpdispatcher.Context) error {
 		//声明模板变量
 		vars := make(jet.VarMap)
 		//设置模板变量
@@ -288,7 +288,7 @@ func BenchmarkTest(b *testing.B) {
     b.ResetTimer()
     d := httpdispatcher.New()
     for i := 0; i < b.N; i++ {
-        d.Router.GET("/"+strconv.Itoa(i), func(ctx *httpdispatcher.Content) error {
+        d.Router.GET("/"+strconv.Itoa(i), func(ctx *httpdispatcher.Context) error {
         return nil
     })
     
