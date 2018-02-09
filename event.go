@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-//事件结构
+//Event 事件结构
 type Event struct {
 	Source   string      //源码文件及行号
 	URI      string      //客户端请求的URI
@@ -17,7 +17,7 @@ type Event struct {
 	Message  interface{} //消息
 }
 
-//事件处理器类型
+//EventHandler 事件处理器类型
 type EventHandler func(*Event)
 
 //事件记录器

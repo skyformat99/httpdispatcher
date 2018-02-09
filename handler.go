@@ -5,7 +5,7 @@ import (
 )
 
 //处理器类型
-type Handler func(*Content) error
+type Handler func(*Context) error
 
 //500(panic)事件处理
 func (d *Dispatcher) panicErrorHandle(resp http.ResponseWriter, req *http.Request, message interface{}) {
@@ -15,7 +15,7 @@ func (d *Dispatcher) panicErrorHandle(resp http.ResponseWriter, req *http.Reques
 	//如果定义了500事件处理器
 	if d.Handler.ServerError != nil {
 		//初始化ctx
-		var ctx Content
+		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
 		if err := ctx.init(); err != nil {
@@ -37,7 +37,7 @@ func (d *Dispatcher) notFoundHandle(resp http.ResponseWriter, req *http.Request)
 	//如果定义了404事件处理器
 	if d.Handler.NotFound != nil {
 		//初始化ctx
-		var ctx Content
+		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
 		if err := ctx.init(); err != nil {
@@ -59,7 +59,7 @@ func (d *Dispatcher) methodNotAllowedHandle(resp http.ResponseWriter, req *http.
 	//如果定义了405事件处理器
 	if d.Handler.MethodNotAllowed != nil {
 		//初始化ctx
-		var ctx Content
+		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
 		if err := ctx.init(); err != nil {

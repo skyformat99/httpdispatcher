@@ -6,6 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+//Dispatcher 调度器结构
 type Dispatcher struct {
 	EventConfig struct {
 		EnableCaller     bool //启用来源记录(影响性能)
@@ -24,6 +25,7 @@ type Dispatcher struct {
 	httpRouter *httprouter.Router
 }
 
+//New 返回一个初始化过的调度器
 func New() *Dispatcher {
 	var d Dispatcher
 	//实例化httprouter路由

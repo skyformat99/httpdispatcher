@@ -8,14 +8,14 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-//路由组
+//RouterGroup 路由组
 type RouterGroup struct {
 	handlers []Handler   //处理器
 	basePath string      //基路径
 	d        *Dispatcher //调度器
 }
 
-//定义路由到目录，不支持路由组和中间件
+//PATH 定义路由到目录，不支持路由组和中间件
 func (r *RouterGroup) PATH(url string, local string, list bool) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -55,7 +55,7 @@ func (r *RouterGroup) PATH(url string, local string, list bool) {
 	})
 }
 
-//定义路由到文件，不支持路由组和中间件
+//FILE 定义路由到文件，不支持路由组和中间件
 func (r *RouterGroup) FILE(url string, local string) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -76,7 +76,7 @@ func (r *RouterGroup) FILE(url string, local string) {
 	})
 }
 
-//定义路由组
+//GROUP 定义路由组
 func (r *RouterGroup) GROUP(path string, handlers ...Handler) *RouterGroup {
 	//声明一个新的路由组
 	var group RouterGroup
@@ -90,7 +90,7 @@ func (r *RouterGroup) GROUP(path string, handlers ...Handler) *RouterGroup {
 	return &group
 }
 
-//定义GET方法的路由
+//GET 定义GET方法的路由
 func (r *RouterGroup) GET(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -104,7 +104,7 @@ func (r *RouterGroup) GET(path string, handler Handler, handlers ...Handler) {
 	})
 }
 
-//定义POST方法的路由
+//POST 定义POST方法的路由
 func (r *RouterGroup) POST(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -118,7 +118,7 @@ func (r *RouterGroup) POST(path string, handler Handler, handlers ...Handler) {
 	})
 }
 
-//定义PUT方法的路由
+//PUT 定义PUT方法的路由
 func (r *RouterGroup) PUT(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -132,7 +132,7 @@ func (r *RouterGroup) PUT(path string, handler Handler, handlers ...Handler) {
 	})
 }
 
-//定义HEAD方法的路由
+//HEAD 定义HEAD方法的路由
 func (r *RouterGroup) HEAD(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -146,7 +146,7 @@ func (r *RouterGroup) HEAD(path string, handler Handler, handlers ...Handler) {
 	})
 }
 
-//定义PATCH方法的路由
+//PATCH 定义PATCH方法的路由
 func (r *RouterGroup) PATCH(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -160,7 +160,7 @@ func (r *RouterGroup) PATCH(path string, handler Handler, handlers ...Handler) {
 	})
 }
 
-//定义DELETE方法的路由
+//DELETE 定义DELETE方法的路由
 func (r *RouterGroup) DELETE(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -174,7 +174,7 @@ func (r *RouterGroup) DELETE(path string, handler Handler, handlers ...Handler) 
 	})
 }
 
-//定义OPTIONS方法的路由
+//OPTIONS 定义OPTIONS方法的路由
 func (r *RouterGroup) OPTIONS(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -191,7 +191,7 @@ func (r *RouterGroup) OPTIONS(path string, handler Handler, handlers ...Handler)
 //执行Handler
 func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, params httprouter.Params, handler Handler, handlers []Handler) {
 	//初始化ctx
-	var ctx Content
+	var ctx Context
 	ctx.Request = req
 	ctx.ResponseWriter = resp
 	ctx.dispatcher = r.d
