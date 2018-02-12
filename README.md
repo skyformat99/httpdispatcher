@@ -219,20 +219,27 @@ func (r *render) ExecuteString(resp http.ResponseWriter, code int, tmpl string, 
 
 //执行模板文件渲染
 func (r *render) ExecuteFile(resp http.ResponseWriter, code int, tmpl string, vars jet.VarMap) error {
-	//相对于模板文件存放路径加载模板文件
-	t, err := r.jet.GetTemplate(tmpl)
+	//加载模板文件
+	t, err := global.Render.GetTemplate(tmpl)
 	if err != nil {
 		return err
 	}
 
-	//设置http状态码
-	resp.WriteHeader(code)
-
-	//执行模板渲染并输出给客户端
-	err = t.Execute(resp, vars, nil)
+    //为防止出现出现http: multiple response.WriteHeader calls错误
+    //将渲染结果赋值给w变量，而不是直接使用resp输出给客户端
+	w := bytes.NewBuffer([]byte{})
+	err = t.Execute(w, data, nil)
 	if err != nil {
 		return err
 	}
+	
+	//将w输出给客户端
+	ctx.ResponseWriter.Header().Set("Content-Type", "text/html; charset=UTF-8")
+	ctx.ResponseWriter.WriteHeader(code)
+	ctx.ResponseWriter.Write(w.Bytes())
+
+	//将bytes.Buffer清空减少内存占用
+	w = bytes.NewBuffer([]byte{})
 
 	return nil
 }
