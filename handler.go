@@ -18,10 +18,7 @@ func (d *Dispatcher) panicErrorHandle(resp http.ResponseWriter, req *http.Reques
 		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
-		if err := ctx.init(); err != nil {
-			d.logger(err.Error(), req, 6)
-			return
-		}
+		ctx.params = make(map[string]interface{})
 		//执行处理器
 		d.Handler.ServerError(&ctx)
 	}
@@ -40,10 +37,7 @@ func (d *Dispatcher) notFoundHandle(resp http.ResponseWriter, req *http.Request)
 		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
-		if err := ctx.init(); err != nil {
-			d.logger(err.Error(), req, 1)
-			return
-		}
+		ctx.params = make(map[string]interface{})
 		//执行处理器
 		d.Handler.NotFound(&ctx)
 	}
@@ -62,11 +56,7 @@ func (d *Dispatcher) methodNotAllowedHandle(resp http.ResponseWriter, req *http.
 		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
-		if err := ctx.init(); err != nil {
-			d.logger(err.Error(), req, 1)
-			return
-		}
-
+		ctx.params = make(map[string]interface{})
 		//执行处理器
 		d.Handler.MethodNotAllowed(&ctx)
 	}

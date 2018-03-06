@@ -195,11 +195,7 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 	ctx.Request = req
 	ctx.ResponseWriter = resp
 	ctx.dispatcher = r.d
-	if err := ctx.init(); err != nil {
-		//触发500事件
-		r.d.panicErrorHandle(resp, req, err.Error())
-		return
-	}
+	ctx.params = make(map[string]interface{})
 	//遍历父路由的中间件处理器
 	for k := range r.handlers {
 		//执行父路由的中间件处理器

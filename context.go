@@ -29,12 +29,6 @@ type ReqValue struct {
 	Error error  //错误
 }
 
-//初始化ctx
-func (ctx *Context) init() error {
-	ctx.params = make(map[string]interface{})
-	return ctx.Request.ParseForm()
-}
-
 //Next 设置标识，用于继续执行下一个处理器
 func (ctx *Context) Next(flag bool) error {
 	ctx.next = flag
