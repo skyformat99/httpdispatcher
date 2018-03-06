@@ -22,8 +22,8 @@ type Context struct {
 	dispatcher     *Dispatcher
 }
 
-//ReqValue 请求的参数值
-type ReqValue struct {
+//BodyValue 请求的参数值
+type BodyValue struct {
 	Key   string //参数名
 	Value string //参数值
 	Error error  //错误
@@ -83,55 +83,58 @@ func (ctx *Context) RealIP() string {
 }
 
 //QueryValue 获取某个GET参数值
-func (ctx *Context) QueryValue(key string) *ReqValue {
-	return &ReqValue{
+func (ctx *Context) QueryValue(key string) *BodyValue {
+	return &BodyValue{
 		Key:   key,
 		Value: ctx.Request.Form.Get(key),
 	}
 }
 
 //FormValue 获取某个POST参数值
-func (ctx *Context) FormValue(key string) *ReqValue {
-	value := ctx.Request.PostFormValue(key)
-	if value == "" {
-		if err := ctx.Request.ParseMultipartForm(32 << 20); err != nil {
-			return &ReqValue{
+func (ctx *Context) FormValue(key string) *BodyValue {
+	//如果是form-data类型
+	if strings.HasPrefix(ctx.Request.Header.Get("Content-Type"), "multipart/form-data") {
+		//使用ParseMultipartForm解析数据
+		if err := ctx.Request.ParseMultipartForm(http.DefaultMaxHeaderBytes); err != nil {
+			return &BodyValue{
 				Key:   key,
 				Error: err,
 			}
 		}
-		if ctx.Request.MultipartForm != nil {
-			values := ctx.Request.MultipartForm.Value[key]
-			if len(values) > 0 {
-				value = values[0]
+	} else {
+		//否则按x-www-form-urlencoded类型来解析数据
+		if err := ctx.Request.ParseForm(); err != nil {
+			return &BodyValue{
+				Key:   key,
+				Error: err,
 			}
 		}
 	}
-	return &ReqValue{
+	return &BodyValue{
 		Key:   key,
-		Value: value,
+		Value: ctx.Request.FormValue(key),
 	}
 }
 
 //将参数值转为string
-func (rv *ReqValue) String() string {
-	if rv.Error != nil {
+func (bv *BodyValue) String() string {
+	if bv.Error != nil {
 		return ""
 	}
-	return rv.Value
+	return bv.Value
 }
 
 //Int 将参数值转为int类型
 //如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (rv *ReqValue) Int(def ...int) (int, error) {
+func (bv *BodyValue) Int(def ...int) (int, error) {
 	defLen := len(def)
-	if rv.Error != nil {
+	if bv.Error != nil {
 		if defLen == 0 {
-			return 0, rv.Error
+			return 0, bv.Error
 		}
 		return def[0], nil
 	}
-	value, err := strconv.Atoi(rv.Value)
+	value, err := strconv.Atoi(bv.Value)
 	if err != nil {
 		if defLen > 0 {
 			return def[0], nil
@@ -143,15 +146,15 @@ func (rv *ReqValue) Int(def ...int) (int, error) {
 
 //Int32 将参数值转为int32类型
 //如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (rv *ReqValue) Int32(def ...int32) (int32, error) {
+func (bv *BodyValue) Int32(def ...int32) (int32, error) {
 	defLen := len(def)
-	if rv.Error != nil {
+	if bv.Error != nil {
 		if defLen == 0 {
-			return 0, rv.Error
+			return 0, bv.Error
 		}
 		return def[0], nil
 	}
-	value, err := strconv.ParseInt(rv.Value, 10, 32)
+	value, err := strconv.ParseInt(bv.Value, 10, 32)
 	if err != nil {
 		if defLen > 0 {
 			return def[0], nil
@@ -163,15 +166,15 @@ func (rv *ReqValue) Int32(def ...int32) (int32, error) {
 
 //Int64 将参数值转为int64类型
 //如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (rv *ReqValue) Int64(def ...int64) (int64, error) {
+func (bv *BodyValue) Int64(def ...int64) (int64, error) {
 	defLen := len(def)
-	if rv.Error != nil {
+	if bv.Error != nil {
 		if defLen == 0 {
-			return 0, rv.Error
+			return 0, bv.Error
 		}
 		return def[0], nil
 	}
-	value, err := strconv.ParseInt(rv.Value, 10, 64)
+	value, err := strconv.ParseInt(bv.Value, 10, 64)
 	if err != nil {
 		if defLen > 0 {
 			return def[0], nil
@@ -183,15 +186,15 @@ func (rv *ReqValue) Int64(def ...int64) (int64, error) {
 
 //Uint32 将参数值转为uint32类型
 //如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (rv *ReqValue) Uint32(def ...uint32) (uint32, error) {
+func (bv *BodyValue) Uint32(def ...uint32) (uint32, error) {
 	defLen := len(def)
-	if rv.Error != nil {
+	if bv.Error != nil {
 		if defLen == 0 {
-			return 0, rv.Error
+			return 0, bv.Error
 		}
 		return def[0], nil
 	}
-	value, err := strconv.ParseUint(rv.Value, 10, 32)
+	value, err := strconv.ParseUint(bv.Value, 10, 32)
 	if err != nil {
 		if defLen > 0 {
 			return def[0], nil
@@ -203,15 +206,15 @@ func (rv *ReqValue) Uint32(def ...uint32) (uint32, error) {
 
 //Uint64 将参数值转为uint64类型
 //如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (rv *ReqValue) Uint64(def ...uint64) (uint64, error) {
+func (bv *BodyValue) Uint64(def ...uint64) (uint64, error) {
 	defLen := len(def)
-	if rv.Error != nil {
+	if bv.Error != nil {
 		if defLen == 0 {
-			return 0, rv.Error
+			return 0, bv.Error
 		}
 		return def[0], nil
 	}
-	value, err := strconv.ParseUint(rv.Value, 10, 64)
+	value, err := strconv.ParseUint(bv.Value, 10, 64)
 	if err != nil {
 		if defLen > 0 {
 			return def[0], nil
@@ -223,15 +226,15 @@ func (rv *ReqValue) Uint64(def ...uint64) (uint64, error) {
 
 //Float32 将参数值转为float32类型
 //如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (rv *ReqValue) Float32(def ...float32) (float32, error) {
+func (bv *BodyValue) Float32(def ...float32) (float32, error) {
 	defLen := len(def)
-	if rv.Error != nil {
+	if bv.Error != nil {
 		if defLen == 0 {
-			return 0, rv.Error
+			return 0, bv.Error
 		}
 		return def[0], nil
 	}
-	value, err := strconv.ParseFloat(rv.Value, 32)
+	value, err := strconv.ParseFloat(bv.Value, 32)
 	if err != nil {
 		if defLen > 0 {
 			return def[0], nil
@@ -243,15 +246,15 @@ func (rv *ReqValue) Float32(def ...float32) (float32, error) {
 
 //Float64 将参数值转为float64类型
 //如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (rv *ReqValue) Float64(def ...float64) (float64, error) {
+func (bv *BodyValue) Float64(def ...float64) (float64, error) {
 	defLen := len(def)
-	if rv.Error != nil {
+	if bv.Error != nil {
 		if defLen == 0 {
-			return 0, rv.Error
+			return 0, bv.Error
 		}
 		return def[0], nil
 	}
-	value, err := strconv.ParseFloat(rv.Value, 64)
+	value, err := strconv.ParseFloat(bv.Value, 64)
 	if err != nil {
 		if defLen > 0 {
 			return def[0], nil
@@ -263,15 +266,15 @@ func (rv *ReqValue) Float64(def ...float64) (float64, error) {
 
 //Bool 将参数值转为bool类型
 //如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (rv *ReqValue) Bool(def ...bool) (bool, error) {
+func (bv *BodyValue) Bool(def ...bool) (bool, error) {
 	defLen := len(def)
-	if rv.Error != nil {
+	if bv.Error != nil {
 		if defLen == 0 {
-			return false, rv.Error
+			return false, bv.Error
 		}
 		return def[0], nil
 	}
-	value, err := strconv.ParseBool(rv.Value)
+	value, err := strconv.ParseBool(bv.Value)
 	if err != nil {
 		if defLen > 0 {
 			return def[0], nil
