@@ -85,6 +85,18 @@ func (ctx *Context) RealIP() string {
 
 //QueryValue 获取某个GET参数值
 func (ctx *Context) QueryValue(key string) *BodyValue {
+	//判断是否已经解析过body
+	if ctx.parsed == false {
+		//使用x-www-form-urlencoded类型来解析body
+		if err := ctx.Request.ParseForm(); err != nil {
+			return &BodyValue{
+				Key:   key,
+				Error: err,
+			}
+		}
+		//标记该context中的body已经解析过
+		ctx.parsed = true
+	}
 	return &BodyValue{
 		Key:   key,
 		Value: ctx.Request.Form.Get(key),
