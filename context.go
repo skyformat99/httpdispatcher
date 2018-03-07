@@ -20,6 +20,7 @@ type Context struct {
 	c              context.Context
 	next           bool //继续往下执行处理器的标识
 	dispatcher     *Dispatcher
+	parsed         bool //是否已解析body
 }
 
 //BodyValue 请求的参数值
@@ -92,23 +93,28 @@ func (ctx *Context) QueryValue(key string) *BodyValue {
 
 //FormValue 获取某个POST参数值
 func (ctx *Context) FormValue(key string) *BodyValue {
-	//如果是form-data类型
-	if strings.HasPrefix(ctx.Request.Header.Get("Content-Type"), "multipart/form-data") {
-		//使用ParseMultipartForm解析数据
-		if err := ctx.Request.ParseMultipartForm(http.DefaultMaxHeaderBytes); err != nil {
-			return &BodyValue{
-				Key:   key,
-				Error: err,
+	//判断是否已经解析过body
+	if ctx.parsed == false {
+		//如果是form-data类型
+		if strings.HasPrefix(ctx.Request.Header.Get("Content-Type"), "multipart/form-data") {
+			//使用ParseMultipartForm解析数据
+			if err := ctx.Request.ParseMultipartForm(http.DefaultMaxHeaderBytes); err != nil {
+				return &BodyValue{
+					Key:   key,
+					Error: err,
+				}
+			}
+		} else {
+			//否则按x-www-form-urlencoded类型来解析数据
+			if err := ctx.Request.ParseForm(); err != nil {
+				return &BodyValue{
+					Key:   key,
+					Error: err,
+				}
 			}
 		}
-	} else {
-		//否则按x-www-form-urlencoded类型来解析数据
-		if err := ctx.Request.ParseForm(); err != nil {
-			return &BodyValue{
-				Key:   key,
-				Error: err,
-			}
-		}
+		//标记该context中的body已经解析过
+		ctx.parsed = true
 	}
 	return &BodyValue{
 		Key:   key,
