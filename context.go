@@ -83,19 +83,37 @@ func (ctx *Context) RealIP() string {
 	return ra
 }
 
+//解析body数据
+func (ctx *Context) parseBody() error {
+	//判断是否已经解析过body
+	if ctx.parsed == true {
+		return nil
+	}
+	//如果是form-data类型
+	if strings.HasPrefix(ctx.Request.Header.Get("Content-Type"), "multipart/form-data") {
+		//使用ParseMultipartForm解析数据
+		if err := ctx.Request.ParseMultipartForm(http.DefaultMaxHeaderBytes); err != nil {
+			return err
+		}
+	} else {
+		//否则按x-www-form-urlencoded类型来解析数据
+		if err := ctx.Request.ParseForm(); err != nil {
+			return err
+		}
+	}
+	//标记该context中的body已经解析过
+	ctx.parsed = true
+	return nil
+}
+
 //QueryValue 获取某个GET参数值
 func (ctx *Context) QueryValue(key string) *BodyValue {
-	//判断是否已经解析过body
-	if ctx.parsed == false {
-		//使用x-www-form-urlencoded类型来解析body
-		if err := ctx.Request.ParseForm(); err != nil {
-			return &BodyValue{
-				Key:   key,
-				Error: err,
-			}
+	err := ctx.parseBody()
+	if err != nil {
+		return &BodyValue{
+			Key:   key,
+			Error: err,
 		}
-		//标记该context中的body已经解析过
-		ctx.parsed = true
 	}
 	return &BodyValue{
 		Key:   key,
@@ -105,28 +123,12 @@ func (ctx *Context) QueryValue(key string) *BodyValue {
 
 //FormValue 获取某个POST参数值
 func (ctx *Context) FormValue(key string) *BodyValue {
-	//判断是否已经解析过body
-	if ctx.parsed == false {
-		//如果是form-data类型
-		if strings.HasPrefix(ctx.Request.Header.Get("Content-Type"), "multipart/form-data") {
-			//使用ParseMultipartForm解析数据
-			if err := ctx.Request.ParseMultipartForm(http.DefaultMaxHeaderBytes); err != nil {
-				return &BodyValue{
-					Key:   key,
-					Error: err,
-				}
-			}
-		} else {
-			//否则按x-www-form-urlencoded类型来解析数据
-			if err := ctx.Request.ParseForm(); err != nil {
-				return &BodyValue{
-					Key:   key,
-					Error: err,
-				}
-			}
+	err := ctx.parseBody()
+	if err != nil {
+		return &BodyValue{
+			Key:   key,
+			Error: err,
 		}
-		//标记该context中的body已经解析过
-		ctx.parsed = true
 	}
 	return &BodyValue{
 		Key:   key,
