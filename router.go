@@ -1,7 +1,6 @@
 package httpdispatcher
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -230,8 +229,7 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 		}
 	}
 
-	log.Println(ctx.next)
-	//执行处理器
+	//执行路由处理器
 	err := handler(&ctx)
 	if err != nil {
 		//触发500事件
