@@ -197,8 +197,10 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 	ctx.ResponseWriter = resp
 	ctx.dispatcher = r.d
 	ctx.params = make(map[string]interface{})
-	//遍历父路由的中间件处理器
+	//遍历执行父路由的中间件处理器
 	for k := range r.handlers {
+		//初始next属性值为false
+		ctx.next = false
 		//执行父路由的中间件处理器
 		err := r.handlers[k](&ctx)
 		if err != nil {
@@ -211,17 +213,19 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 			return
 		}
 	}
-	//遍历刚传入的中间件处理器
+	//遍历执行刚传入的中间件处理器
 	for k := range handlers {
-		//如果父路由的中间件处理器执行完之后ctx的next属性值为false，则不继续循环执行下一个中间件或处理器而是退出整个函数
-		if ctx.next == false {
-			return
-		}
+		//初始next属性值为false
+		ctx.next = false
 		//执行中间件处理器
 		err := handlers[k](&ctx)
 		if err != nil {
 			//触发500事件
 			r.d.panicErrorHandle(resp, req, err.Error())
+			return
+		}
+		//如果父路由的中间件处理器执行完之后ctx的next属性值为false，则不继续循环执行下一个中间件或处理器而是退出整个函数
+		if ctx.next == false {
 			return
 		}
 	}
