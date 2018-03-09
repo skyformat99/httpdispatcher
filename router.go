@@ -212,15 +212,15 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 	}
 	//遍历刚传入的中间件处理器
 	for k := range handlers {
+		//如果父路由的中间件处理器执行完之后ctx的next属性值为false，则不继续循环执行下一个中间件或处理器而是退出整个函数
+		if ctx.next == false {
+			return
+		}
 		//执行中间件处理器
 		err := handlers[k](&ctx)
 		if err != nil {
 			//触发500事件
 			r.d.panicErrorHandle(resp, req, err.Error())
-			return
-		}
-		//如果控制器执行完之后ctx的next属性值为false，则不继续循环执行下一个处理器而是退出整个函数
-		if ctx.next == false {
 			return
 		}
 	}
