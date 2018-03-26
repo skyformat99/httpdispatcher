@@ -1,3 +1,5 @@
+.gitignore
+*.iml
 .idea
 .vscode
-httpdispatcher.iml
+/vendor
