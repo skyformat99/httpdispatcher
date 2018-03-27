@@ -19,9 +19,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"time"
+	"time"``
 
-	"gitee.com/dxvgef/httpdispatcher"
+	"github.com/dxvgef/httpdispatcher"
 )
 
 func main() {
