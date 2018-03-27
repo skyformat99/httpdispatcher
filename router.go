@@ -195,7 +195,8 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 	ctx.Request = req
 	ctx.ResponseWriter = resp
 	ctx.dispatcher = r.d
-	ctx.params = make(map[string]interface{})
+	ctx.ctxParams = make(map[string]interface{})
+	ctx.routerParams = params
 	//遍历执行父路由的中间件处理器
 	for k := range r.handlers {
 		//初始next属性值为false
