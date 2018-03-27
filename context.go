@@ -1,7 +1,6 @@
 package httpdispatcher
 
 import (
-	"context"
 	"errors"
 	"net"
 	"net/http"
@@ -15,12 +14,12 @@ import (
 type Context struct {
 	Request        *http.Request
 	ResponseWriter http.ResponseWriter
-	routerParams   []httprouter.Param     //路由参数
-	params         map[string]interface{} //ctx参数
-	c              context.Context
-	next           bool //继续往下执行处理器的标识
-	dispatcher     *Dispatcher
-	parsed         bool //是否已解析body
+	routerParams   httprouter.Params      //路由参数
+	ctxParams      map[string]interface{} //ctx参数
+	//cc             context.Context
+	next       bool //继续往下执行处理器的标识
+	dispatcher *Dispatcher
+	parsed     bool //是否已解析body
 }
 
 //BodyValue 请求的参数值
@@ -38,12 +37,12 @@ func (ctx *Context) Next(flag bool) error {
 
 //SetContextValue 在ctx里存储值，如果key存在则替换值
 func (ctx *Context) SetContextValue(key string, value interface{}) {
-	ctx.params[key] = value
+	ctx.ctxParams[key] = value
 }
 
 //ContextValue 获取ctx里的值，取出后根据写入的类型自行断言
 func (ctx *Context) ContextValue(key string) interface{} {
-	return ctx.params[key]
+	return ctx.ctxParams[key]
 }
 
 //Redirect 重定向
@@ -104,6 +103,14 @@ func (ctx *Context) parseBody() error {
 	//标记该context中的body已经解析过
 	ctx.parsed = true
 	return nil
+}
+
+//RouteValue 获取路由参数值
+func (ctx *Context) RouteValue(key string) *BodyValue {
+	return &BodyValue{
+		Key:   key,
+		Value: ctx.routerParams.ByName("key"),
+	}
 }
 
 //QueryValue 获取某个GET参数值
