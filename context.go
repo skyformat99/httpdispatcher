@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"runtime"
+
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -58,12 +60,31 @@ func (ctx *Context) Redirect(code int, url string) error {
 //Return 控制器return error时使用，用于精准记录源码文件及行号
 func (ctx *Context) Return(err error) error {
 	if err != nil {
-		//记录事件
-		ctx.dispatcher.logger(err, ctx.Request, 2)
 		//如果定义了500事件处理器
-		if ctx.dispatcher.Handler.ServerError != nil {
+		if ctx.dispatcher.EventHandler.ServerError != nil {
+			var event Event
+			event.Message = err
+			if ctx.dispatcher.EventConfig.EnableCaller == true {
+				_, file, line, _ := runtime.Caller(1)
+				l := strconv.Itoa(line)
+				if ctx.dispatcher.EventConfig.ShortCaller == true {
+					short := file
+					fileLen := len(file)
+					for i := fileLen - 1; i > 0; i-- {
+						if file[i] == '/' {
+							short = file[i+1:]
+							break
+						}
+					}
+					file = short
+				}
+				f := file
+				event.Trace = append(event.Trace, f+":"+l)
+			}
+			//将事件写入到ContextValue中
+			ctx.SetContextValue("_event", event)
 			//执行500处理器
-			ctx.dispatcher.Handler.ServerError(ctx)
+			ctx.dispatcher.EventHandler.ServerError(ctx)
 		}
 	}
 	return nil
