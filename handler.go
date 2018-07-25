@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"runtime"
 	"strconv"
+	"strings"
 )
 
 //EventHandler 处理器类型
@@ -29,9 +30,12 @@ func (d *Dispatcher) panicErrorHandle(resp http.ResponseWriter, req *http.Reques
 			event.Message = errors.New("未知的错误消息")
 		}
 		if d.EventConfig.EnableCaller == true {
+			goRoot := runtime.GOROOT()
 			for skip := 0; ; skip++ {
 				_, file, line, ok := runtime.Caller(skip)
-				event.Trace = append(event.Trace, file+":"+strconv.Itoa(line))
+				if strings.HasPrefix(file, goRoot) == false {
+					event.Trace = append(event.Trace, file+":"+strconv.Itoa(line))
+				}
 				if ok == false {
 					break
 				}
