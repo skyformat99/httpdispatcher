@@ -27,7 +27,7 @@ func (d *Dispatcher) panicErrorHandle(resp http.ResponseWriter, req *http.Reques
 		} else if errErr, ok := err.(error); ok == true {
 			event.Message = errErr
 		} else {
-			event.Message = errors.New("未知的错误消息")
+			event.Message = errors.New("未知错误")
 		}
 		if d.EventConfig.EnableCaller == true {
 			goRoot := runtime.GOROOT()
