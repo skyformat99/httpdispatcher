@@ -22,7 +22,7 @@ func (r *RouterGroup) PATH(url string, local string, list bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			fmt.Println("注册路由" + url + "出错：" + err.(string))
+			fmt.Println(err.(string))
 			os.Exit(1)
 		}
 	}()
@@ -61,7 +61,7 @@ func (r *RouterGroup) PATH(url string, local string, list bool) {
 func (r *RouterGroup) FILE(url string, local string) {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("注册路由" + url + "出错：" + err.(string))
+			fmt.Println(err.(string))
 			os.Exit(1)
 		}
 	}()
@@ -95,7 +95,7 @@ func (r *RouterGroup) GROUP(path string, handlers ...Handler) *RouterGroup {
 func (r *RouterGroup) GET(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("注册路由" + path + "出错：" + err.(string))
+			fmt.Println(err.(string))
 			os.Exit(1)
 		}
 	}()
@@ -108,7 +108,7 @@ func (r *RouterGroup) GET(path string, handler Handler, handlers ...Handler) {
 func (r *RouterGroup) POST(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("注册路由" + path + "出错：" + err.(string))
+			fmt.Println(err.(string))
 			os.Exit(1)
 		}
 	}()
@@ -121,7 +121,7 @@ func (r *RouterGroup) POST(path string, handler Handler, handlers ...Handler) {
 func (r *RouterGroup) PUT(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("注册路由" + path + "出错：" + err.(string))
+			fmt.Println(err.(string))
 			os.Exit(1)
 		}
 	}()
@@ -135,7 +135,7 @@ func (r *RouterGroup) HEAD(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			fmt.Println("注册路由" + path + "出错：" + err.(string))
+			fmt.Println(err.(string))
 			os.Exit(1)
 		}
 	}()
@@ -149,7 +149,7 @@ func (r *RouterGroup) PATCH(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			fmt.Println("注册路由" + path + "出错：" + err.(string))
+			fmt.Println(err.(string))
 			os.Exit(1)
 		}
 	}()
@@ -162,7 +162,7 @@ func (r *RouterGroup) PATCH(path string, handler Handler, handlers ...Handler) {
 func (r *RouterGroup) DELETE(path string, handler Handler, handlers ...Handler) {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("注册路由" + path + "出错：" + err.(string))
+			fmt.Println(err.(string))
 			os.Exit(1)
 		}
 	}()
@@ -176,7 +176,7 @@ func (r *RouterGroup) OPTIONS(path string, handler Handler, handlers ...Handler)
 	defer func() {
 		if err := recover(); err != nil {
 			//记录panic事件，但不执行 ServerError处理器，而是直接退出进程
-			fmt.Println("注册路由" + path + "出错：" + err.(string))
+			fmt.Println(err.(string))
 			os.Exit(1)
 		}
 	}()
