@@ -1,16 +1,21 @@
 # HTTP Dispatcher
-使用golang基于[http router](https://github.com/julienschmidt/httprouter)路由包实现的轻量HTTP调度器，没有对http router包做任何修改，仅封装实现了以下功能：
+
+使用 Go 语言基于高性能的[http router](https://github.com/julienschmidt/httprouter)路由包实现的 HTTP 调度器，没有对 http router 包做任何修改，仅轻量封装实现了更多功能，同时保留 net/http 标准包的 API 访问，适合自行整合第三方包进行二次开发扩展功能。
+
+目前已实现以下功能：
+
 - [x] 无限层级的路由组
 - [x] 路由中间件（钩子）
 - [x] Context（会话上下文）
-- [x] 使用Context在同一会话的处理器间传递变量（`SetContextValue` / `ContextValue`）
+- [x] 使用 Context 在同一会话的处理器间传递变量（`SetContextValue` / `ContextValue`）
 - [x] 使用`PATH()`和`FILE()`替代`httprouter.ServeFiles()`方法，改进如下：
-    * 可禁止列举出目录下的所有文件
-    * 由`Dispacher.Handler.NotFoundHandler`来处理404，调度器本身不会主动输出任何消息给客户端
-  
+
+  - 可禁止列举出目录下的所有文件
+  - 由`Dispacher.Handler.NotFoundHandler`来处理 404，调度器本身不会主动输出任何消息给客户端
 
 ## 基本示例
-``` Go
+
+```Go
 package main
 
 import (
@@ -171,14 +176,18 @@ func hookHandler(ctx *httpdispatcher.Context) error {
 ```
 
 ## Logger
+
 可与[github.com/uber-go/zap](https://github.com/uber-go/zap)包整合实现日志记录功能
 
 ## Session
-可与[github.com/dxvgef/sessions](https://github.com/dxvgef/sessions)包整合实现Session功能，请进入该项目查看示例代码
+
+可与[github.com/dxvgef/sessions](https://github.com/dxvgef/sessions)包整合实现 Session 功能，请进入该项目查看示例代码
 
 ## 模板引擎
+
 可与[github.com/CloudyKit/jet](https://github.com/CloudyKit/jet)包整合实现模板渲染功能
-``` Go
+
+```Go
 package main
 
 import (
@@ -232,7 +241,7 @@ func (r *render) ExecuteFile(resp http.ResponseWriter, code int, tmpl string, va
 	if err != nil {
 		return err
 	}
-	
+
 	//将w输出给客户端
 	ctx.ResponseWriter.Header().Set("Content-Type", "text/html; charset=UTF-8")
 	ctx.ResponseWriter.WriteHeader(code)
@@ -289,8 +298,10 @@ func main() {
 ```
 
 ## Benchmark
-#### 路由注册Benchmark代码
-``` Go
+
+#### 路由注册 Benchmark 代码
+
+```Go
 func BenchmarkTest(b *testing.B) {
     b.ResetTimer()
     d := httpdispatcher.New()
@@ -298,7 +309,7 @@ func BenchmarkTest(b *testing.B) {
         d.Router.GET("/"+strconv.Itoa(i), func(ctx *httpdispatcher.Context) error {
         return nil
     })
-    
+
     //e := echo.New()
     //for i := 0; i < b.N; i++ {
     //  e.GET("/"+strconv.Itoa(i), func(ctx echo.Context) error {
@@ -308,7 +319,8 @@ func BenchmarkTest(b *testing.B) {
 }
 ```
 
-### 路由注册Benchmark结果
+### 路由注册 Benchmark 结果
+
 ```
 goos: darwin
 goarch: amd64
