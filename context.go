@@ -64,7 +64,7 @@ func (ctx *Context) Return(err error) error {
 		if ctx.dispatcher.EventHandler.ServerError != nil {
 			var event Event
 			event.Message = err
-			if ctx.dispatcher.EventConfig.EnableCaller == true {
+			if ctx.dispatcher.EventConfig.EnableTrace == true {
 				_, file, line, _ := runtime.Caller(1)
 				l := strconv.Itoa(line)
 				if ctx.dispatcher.EventConfig.ShortCaller == true {

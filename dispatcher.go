@@ -16,8 +16,8 @@ type Event struct {
 type Dispatcher struct {
 	//事件记录配置
 	EventConfig struct {
-		EnableCaller bool //启用来源记录(影响性能)
-		ShortCaller  bool //缩短来源记录(仅记录源码文件名)
+		EnableTrace bool //启用500事件的跟踪(影响性能)
+		ShortCaller bool //缩短事件触发的源码文件名(仅记录源码文件名，仅对ctx.Return触发的500事件有效)s
 	}
 	//事件处理事
 	EventHandler struct {

@@ -29,7 +29,7 @@ func (d *Dispatcher) panicErrorHandle(resp http.ResponseWriter, req *http.Reques
 		} else {
 			event.Message = errors.New("未知错误")
 		}
-		if d.EventConfig.EnableCaller == true {
+		if d.EventConfig.EnableTrace == true {
 			goRoot := runtime.GOROOT()
 			for skip := 0; ; skip++ {
 				_, file, line, ok := runtime.Caller(skip)
