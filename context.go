@@ -130,7 +130,7 @@ func (ctx *Context) parseBody() error {
 func (ctx *Context) RouteValue(key string) *BodyValue {
 	return &BodyValue{
 		Key:   key,
-		Value: ctx.routerParams.ByName("key"),
+		Value: ctx.routerParams.ByName(key),
 	}
 }
 
