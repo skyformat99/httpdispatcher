@@ -193,13 +193,14 @@ func (r *RouterGroup) OPTIONS(path string, handler Handler, handlers ...Handler)
 }
 
 // 执行Handler
+// func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, params httprouter.Params, handler Handler, handlers []Handler) {
 func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, params httprouter.Params, handler Handler, handlers []Handler) {
 	var ctx Context
 	ctx.Request = req
 	ctx.ResponseWriter = resp
 	ctx.dispatcher = r.dispatcher
-	ctx.ctxParams = make(map[string]interface{})
 	ctx.routerParams = params
+
 	for k := range r.handlers {
 		ctx.next = false
 		err := r.handlers[k](&ctx)
@@ -211,6 +212,7 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 			return
 		}
 	}
+
 	for k := range handlers {
 		ctx.next = false
 		err := handlers[k](&ctx)

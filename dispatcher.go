@@ -38,11 +38,9 @@ func New() *Dispatcher {
 	dispatcher.httpRouter.PanicHandler = dispatcher.panicErrorHandle
 	dispatcher.httpRouter.NotFound = http.HandlerFunc(dispatcher.notFoundHandle)
 	dispatcher.httpRouter.MethodNotAllowed = http.HandlerFunc(dispatcher.methodNotAllowedHandle)
-
 	dispatcher.Router = &RouterGroup{
 		dispatcher: &dispatcher,
 	}
-
 	return &dispatcher
 }
 

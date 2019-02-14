@@ -2,3 +2,6 @@
 Gopkg.*
 .vscode
 .history
+.idea
+
+*.iml

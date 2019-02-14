@@ -17,7 +17,6 @@ func (d *Dispatcher) panicErrorHandle(resp http.ResponseWriter, req *http.Reques
 		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
-		ctx.ctxParams = make(map[string]interface{})
 
 		var event Event
 		if errStr, ok := err.(string); ok == true {
@@ -53,7 +52,6 @@ func (d *Dispatcher) notFoundHandle(resp http.ResponseWriter, req *http.Request)
 		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
-		ctx.ctxParams = make(map[string]interface{})
 		d.EventHandler.NotFound(&ctx)
 	}
 }
@@ -64,7 +62,6 @@ func (d *Dispatcher) methodNotAllowedHandle(resp http.ResponseWriter, req *http.
 		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
-		ctx.ctxParams = make(map[string]interface{})
 		d.EventHandler.MethodNotAllowed(&ctx)
 	}
 }

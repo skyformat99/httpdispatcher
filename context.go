@@ -1,6 +1,7 @@
 package httpdispatcher
 
 import (
+	"context"
 	"errors"
 	"net"
 	"net/http"
@@ -16,9 +17,8 @@ import (
 type Context struct {
 	Request        *http.Request
 	ResponseWriter http.ResponseWriter
-	routerParams   httprouter.Params      // 路由参数
-	ctxParams      map[string]interface{} // ctx参数
-	next           bool                   // 继续往下执行处理器的标识
+	routerParams   httprouter.Params // 路由参数
+	next           bool              // 继续往下执行处理器的标识
 	dispatcher     *Dispatcher
 	parsed         bool // 是否已解析body
 }
@@ -38,12 +38,12 @@ func (ctx *Context) Next(flag bool) error {
 
 // SetContextValue 在ctx里存储值，如果key存在则替换值
 func (ctx *Context) SetContextValue(key string, value interface{}) {
-	ctx.ctxParams[key] = value
+	ctx.Request = ctx.Request.WithContext(context.WithValue(ctx.Request.Context(), key, value))
 }
 
 // ContextValue 获取ctx里的值，取出后根据写入的类型自行断言
 func (ctx *Context) ContextValue(key string) interface{} {
-	return ctx.ctxParams[key]
+	return ctx.Request.Context().Value(key)
 }
 
 // Redirect 重定向
