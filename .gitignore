@@ -1,6 +1,4 @@
 .gitignore
-*.iml
-.idea
 Gopkg.*
 .vscode
-/vendor
+.history

@@ -8,14 +8,12 @@ import (
 	"strings"
 )
 
-//EventHandler 处理器类型
+// Handler 处理器类型
 type Handler func(*Context) error
 
-//500(panic)事件处理
+// 500(panic)事件处理
 func (d *Dispatcher) panicErrorHandle(resp http.ResponseWriter, req *http.Request, err interface{}) {
-	//如果定义了500事件处理器
 	if d.EventHandler.ServerError != nil {
-		//初始化ctx
 		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
@@ -41,38 +39,32 @@ func (d *Dispatcher) panicErrorHandle(resp http.ResponseWriter, req *http.Reques
 				}
 			}
 		}
-		//将事件写入到ContextValue中
+		// 将事件写入到ContextValue中
 		ctx.SetContextValue("_event", event)
 
-		//执行处理器
+		// 执行处理器
 		d.EventHandler.ServerError(&ctx)
 	}
 }
 
-//404事件处理
+// 404事件处理
 func (d *Dispatcher) notFoundHandle(resp http.ResponseWriter, req *http.Request) {
-	//如果定义了404事件处理器
 	if d.EventHandler.NotFound != nil {
-		//初始化ctx
 		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
 		ctx.ctxParams = make(map[string]interface{})
-		//执行处理器
 		d.EventHandler.NotFound(&ctx)
 	}
 }
 
-//405事件处理
+// 405事件处理
 func (d *Dispatcher) methodNotAllowedHandle(resp http.ResponseWriter, req *http.Request) {
-	//如果定义了405事件处理器
 	if d.EventHandler.MethodNotAllowed != nil {
-		//初始化ctx
 		var ctx Context
 		ctx.Request = req
 		ctx.ResponseWriter = resp
 		ctx.ctxParams = make(map[string]interface{})
-		//执行处理器
 		d.EventHandler.MethodNotAllowed(&ctx)
 	}
 }
