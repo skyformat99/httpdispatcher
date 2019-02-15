@@ -10,6 +10,9 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// Handler 处理器类型
+type Handler func(*Context) error
+
 // RouterGroup 路由组
 type RouterGroup struct {
 	handlers   []Handler   // 处理器
@@ -53,7 +56,7 @@ func (r *RouterGroup) PATH(url string, local string, list bool) {
 		if params.ByName("filepath") == "" || params.ByName("filepath")[len(params.ByName("filepath"))-1:] == "/" {
 			if list == false {
 				// 如果不允许列出目录，则触发404事件处理
-				r.dispatcher.notFoundHandle(resp, req)
+				r.dispatcher.handle404(resp, req)
 				return
 			}
 		}
@@ -62,7 +65,7 @@ func (r *RouterGroup) PATH(url string, local string, list bool) {
 		file := local + params.ByName("filepath")
 		_, err := os.Stat(file)
 		if err != nil {
-			r.dispatcher.notFoundHandle(resp, req)
+			r.dispatcher.handle404(resp, req)
 			return
 		}
 		http.ServeFile(resp, req, file)
@@ -81,7 +84,7 @@ func (r *RouterGroup) FILE(url string, local string) {
 	r.dispatcher.httpRouter.GET(url, func(resp http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		_, err := os.Stat(local)
 		if err != nil {
-			r.dispatcher.notFoundHandle(resp, req)
+			r.dispatcher.handle404(resp, req)
 			return
 		}
 		http.ServeFile(resp, req, local)
@@ -205,7 +208,7 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 		ctx.next = false
 		err := r.handlers[k](&ctx)
 		if err != nil {
-			r.dispatcher.panicErrorHandle(resp, req, err)
+			r.dispatcher.handle500(resp, req, err)
 			return
 		}
 		if ctx.next == false {
@@ -217,7 +220,7 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 		ctx.next = false
 		err := handlers[k](&ctx)
 		if err != nil {
-			r.dispatcher.panicErrorHandle(resp, req, err)
+			r.dispatcher.handle500(resp, req, err)
 			return
 		}
 		if ctx.next == false {
@@ -227,6 +230,6 @@ func (r *RouterGroup) execute(resp http.ResponseWriter, req *http.Request, param
 
 	err := handler(&ctx)
 	if err != nil {
-		r.dispatcher.panicErrorHandle(resp, req, err)
+		r.dispatcher.handle500(resp, req, err)
 	}
 }
