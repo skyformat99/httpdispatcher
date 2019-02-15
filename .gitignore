@@ -1,7 +1,10 @@
-.gitignore
-Gopkg.*
 .vscode
 .history
 .idea
 
 *.iml
+<<<<<<< HEAD
+=======
+.gitignore
+Gopkg.*
+>>>>>>> dev
