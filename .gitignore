@@ -1,7 +1,7 @@
-.gitignore
-Gopkg.*
 .vscode
 .history
 .idea
 
 *.iml
+.gitignore
+Gopkg.*
