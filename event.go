@@ -10,11 +10,11 @@ import (
 
 // 事件结构
 type Event struct {
-	Status  int      // HTTP状态码
-	Trace   []string // 触发事件的trace
-	Message error    // 事件消息文本
-	Resp    http.ResponseWriter
-	Req     *http.Request
+	Status         int      // HTTP状态码
+	Trace          []string // 触发事件的trace
+	Message        error    // 事件消息文本
+	ResponseWriter http.ResponseWriter
+	Request        *http.Request
 }
 
 // EventHandler 事件处理器类型
@@ -24,8 +24,8 @@ type EventHandler func(*Event)
 func (d *Dispatcher) handle500(resp http.ResponseWriter, req *http.Request, err interface{}) {
 	if d.Event.Handler != nil {
 		var event Event
-		event.Req = req
-		event.Resp = resp
+		event.Request = req
+		event.ResponseWriter = resp
 		event.Status = 500
 
 		if errStr, ok := err.(string); ok == true {
@@ -70,8 +70,8 @@ func (d *Dispatcher) handle404(resp http.ResponseWriter, req *http.Request) {
 		var event Event
 		event.Status = 404
 		event.Message = errors.New(http.StatusText(404))
-		event.Req = req
-		event.Resp = resp
+		event.Request = req
+		event.ResponseWriter = resp
 		d.Event.Handler(&event)
 	}
 }
@@ -82,8 +82,8 @@ func (d *Dispatcher) handle405(resp http.ResponseWriter, req *http.Request) {
 		var event Event
 		event.Status = 405
 		event.Message = errors.New(http.StatusText(405))
-		event.Req = req
-		event.Resp = resp
+		event.Request = req
+		event.ResponseWriter = resp
 		d.Event.Handler(&event)
 	}
 }
