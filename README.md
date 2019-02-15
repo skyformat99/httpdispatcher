@@ -6,7 +6,7 @@
 
 ## 手册
 * [基本示例](https://github.com/dxvgef/httpdispatcher/wiki/%E5%9F%BA%E6%9C%AC%E7%A4%BA%E4%BE%8B)
-* [事件处理 `httpdispatcher.Event`](https://github.com/dxvgef/httpdispatcher/wiki/%E4%BA%8B%E4%BB%B6%E5%9B%9E%E8%B0%83)
+* [事件处理 `httpdispatcher.Event`](https://github.com/dxvgef/httpdispatcher/wiki/%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86)
 * [路由/路由组 `httpdispacher.Router`](https://github.com/dxvgef/httpdispatcher/wiki/%E8%B7%AF%E7%94%B1)
 * [处理器 httpdispatcher.Handler](https://github.com/dxvgef/httpdispatcher/wiki/%E5%A4%84%E7%90%86%E5%99%A8)
 * [会话上下文 `httpdispatcher.Context`](https://github.com/dxvgef/httpdispatcher/wiki/%E4%BC%9A%E8%AF%9D%E4%B8%8A%E4%B8%8B%E6%96%87)
