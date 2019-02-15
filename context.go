@@ -56,17 +56,20 @@ func (ctx *Context) Redirect(code int, url string) error {
 	return nil
 }
 
-// Return 控制器return error时使用，用于精准记录源码文件及行号
-func (ctx *Context) Return(err error) error {
+// Event 在控制器return时使用，用于精准记录源码文件及行号
+func (ctx *Context) Event(err error) error {
 	if err != nil {
 		// 如果定义了500事件处理器
-		if ctx.dispatcher.EventHandler.ServerError != nil {
+		if ctx.dispatcher.Event.Handler != nil {
 			var event Event
+			event.Status = 500
 			event.Message = err
-			if ctx.dispatcher.EventConfig.EnableTrace == true {
+			event.Resp = ctx.ResponseWriter
+			event.Req = ctx.Request
+			if ctx.dispatcher.Event.EnableTrace == true {
 				_, file, line, _ := runtime.Caller(1)
 				l := strconv.Itoa(line)
-				if ctx.dispatcher.EventConfig.ShortCaller == true {
+				if ctx.dispatcher.Event.ShortCaller == true {
 					short := file
 					fileLen := len(file)
 					for i := fileLen - 1; i > 0; i-- {
@@ -77,15 +80,12 @@ func (ctx *Context) Return(err error) error {
 					}
 					file = short
 				}
-				f := file
-				event.Trace = append(event.Trace, f+":"+l)
+				event.Trace = append(event.Trace, file+":"+l)
 			}
-			// 将事件写入到ContextValue中
-			ctx.SetContextValue("_event", event)
-			// 执行500处理器
-			ctx.dispatcher.EventHandler.ServerError(ctx)
+			ctx.dispatcher.Event.Handler(&event)
 		}
 	}
+	// 不再将传入的error返回，避免再触发handle500函数
 	return nil
 }
 
