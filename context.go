@@ -64,8 +64,8 @@ func (ctx *Context) Event(err error) error {
 			var event Event
 			event.Status = 500
 			event.Message = err
-			event.Resp = ctx.ResponseWriter
-			event.Req = ctx.Request
+			event.ResponseWriter = ctx.ResponseWriter
+			event.Request = ctx.Request
 			if ctx.dispatcher.Event.EnableTrace == true {
 				_, file, line, _ := runtime.Caller(1)
 				l := strconv.Itoa(line)
