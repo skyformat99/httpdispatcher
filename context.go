@@ -23,8 +23,8 @@ type Context struct {
 	parsed         bool // 是否已解析body
 }
 
-// BodyValue 请求的参数值
-type BodyValue struct {
+// ReqValue 请求参数值
+type ReqValue struct {
 	Key   string // 参数名
 	Value string // 参数值
 	Error error  // 错误
@@ -123,54 +123,57 @@ func (ctx *Context) parseBody() error {
 }
 
 // RouteValue 获取路由参数值
-func (ctx *Context) RouteValue(key string) *BodyValue {
-	return &BodyValue{
+func (ctx *Context) RouteValue(key string) *ReqValue {
+	return &ReqValue{
 		Key:   key,
 		Value: ctx.routerParams.ByName(key),
 	}
 }
 
 // QueryValue 获取某个GET参数值
-func (ctx *Context) QueryValue(key string) *BodyValue {
+func (ctx *Context) QueryValue(key string) *ReqValue {
 	err := ctx.parseBody()
 	if err != nil {
-		return &BodyValue{
+		return &ReqValue{
 			Key:   key,
 			Error: err,
 		}
 	}
-	return &BodyValue{
+	return &ReqValue{
 		Key:   key,
 		Value: ctx.Request.Form.Get(key),
 	}
 }
 
 // FormValue 获取某个POST参数值
-func (ctx *Context) FormValue(key string) *BodyValue {
+func (ctx *Context) FormValue(key string) *ReqValue {
 	err := ctx.parseBody()
 	if err != nil {
-		return &BodyValue{
+		return &ReqValue{
 			Key:   key,
 			Error: err,
 		}
 	}
-	return &BodyValue{
+	return &ReqValue{
 		Key:   key,
 		Value: ctx.Request.FormValue(key),
 	}
 }
 
-// 将参数值转为string
-func (bv *BodyValue) String() string {
+// 将参数值转为string，入参为true时自动去除前后空格
+func (bv *ReqValue) String(trim bool) string {
 	if bv.Error != nil {
 		return ""
+	}
+	if trim == true {
+		return strings.TrimSpace(bv.Value)
 	}
 	return bv.Value
 }
 
 // Int 将参数值转为int类型
 // 如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (bv *BodyValue) Int(def ...int) (int, error) {
+func (bv *ReqValue) Int(def ...int) (int, error) {
 	defLen := len(def)
 	if bv.Error != nil {
 		if defLen == 0 {
@@ -190,7 +193,7 @@ func (bv *BodyValue) Int(def ...int) (int, error) {
 
 // Int32 将参数值转为int32类型
 // 如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (bv *BodyValue) Int32(def ...int32) (int32, error) {
+func (bv *ReqValue) Int32(def ...int32) (int32, error) {
 	defLen := len(def)
 	if bv.Error != nil {
 		if defLen == 0 {
@@ -210,7 +213,7 @@ func (bv *BodyValue) Int32(def ...int32) (int32, error) {
 
 // Int64 将参数值转为int64类型
 // 如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (bv *BodyValue) Int64(def ...int64) (int64, error) {
+func (bv *ReqValue) Int64(def ...int64) (int64, error) {
 	defLen := len(def)
 	if bv.Error != nil {
 		if defLen == 0 {
@@ -230,7 +233,7 @@ func (bv *BodyValue) Int64(def ...int64) (int64, error) {
 
 // Uint32 将参数值转为uint32类型
 // 如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (bv *BodyValue) Uint32(def ...uint32) (uint32, error) {
+func (bv *ReqValue) Uint32(def ...uint32) (uint32, error) {
 	defLen := len(def)
 	if bv.Error != nil {
 		if defLen == 0 {
@@ -250,7 +253,7 @@ func (bv *BodyValue) Uint32(def ...uint32) (uint32, error) {
 
 // Uint64 将参数值转为uint64类型
 // 如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (bv *BodyValue) Uint64(def ...uint64) (uint64, error) {
+func (bv *ReqValue) Uint64(def ...uint64) (uint64, error) {
 	defLen := len(def)
 	if bv.Error != nil {
 		if defLen == 0 {
@@ -270,7 +273,7 @@ func (bv *BodyValue) Uint64(def ...uint64) (uint64, error) {
 
 // Float32 将参数值转为float32类型
 // 如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (bv *BodyValue) Float32(def ...float32) (float32, error) {
+func (bv *ReqValue) Float32(def ...float32) (float32, error) {
 	defLen := len(def)
 	if bv.Error != nil {
 		if defLen == 0 {
@@ -290,7 +293,7 @@ func (bv *BodyValue) Float32(def ...float32) (float32, error) {
 
 // Float64 将参数值转为float64类型
 // 如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (bv *BodyValue) Float64(def ...float64) (float64, error) {
+func (bv *ReqValue) Float64(def ...float64) (float64, error) {
 	defLen := len(def)
 	if bv.Error != nil {
 		if defLen == 0 {
@@ -310,7 +313,7 @@ func (bv *BodyValue) Float64(def ...float64) (float64, error) {
 
 // Bool 将参数值转为bool类型
 // 如果传入了def参数值，在转换出错时返回def，并且第二个出参永远为nil
-func (bv *BodyValue) Bool(def ...bool) (bool, error) {
+func (bv *ReqValue) Bool(def ...bool) (bool, error) {
 	defLen := len(def)
 	if bv.Error != nil {
 		if defLen == 0 {
