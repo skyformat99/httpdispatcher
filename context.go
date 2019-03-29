@@ -58,32 +58,30 @@ func (ctx *Context) Redirect(code int, url string) error {
 
 // Event 在控制器return时使用，用于精准记录源码文件及行号
 func (ctx *Context) Event(err error) error {
-	if err != nil {
-		// 如果定义了500事件处理器
-		if ctx.dispatcher.Event.Handler != nil {
-			var event Event
-			event.Status = 500
-			event.Message = err
-			event.ResponseWriter = ctx.ResponseWriter
-			event.Request = ctx.Request
-			if ctx.dispatcher.Event.EnableTrace == true {
-				_, file, line, _ := runtime.Caller(1)
-				l := strconv.Itoa(line)
-				if ctx.dispatcher.Event.ShortCaller == true {
-					short := file
-					fileLen := len(file)
-					for i := fileLen - 1; i > 0; i-- {
-						if file[i] == '/' {
-							short = file[i+1:]
-							break
-						}
-					}
-					file = short
-				}
-				event.Trace = append(event.Trace, file+":"+l)
-			}
-			ctx.dispatcher.Event.Handler(&event)
+	if err != nil && ctx.dispatcher.Event.Handler != nil {
+		event := Event{
+			Status:         500,
+			Message:        err,
+			ResponseWriter: ctx.ResponseWriter,
+			Request:        ctx.Request,
 		}
+		if ctx.dispatcher.Event.EnableTrace == true {
+			_, file, line, _ := runtime.Caller(1)
+			l := strconv.Itoa(line)
+			if ctx.dispatcher.Event.ShortCaller == true {
+				short := file
+				fileLen := len(file)
+				for i := fileLen - 1; i > 0; i-- {
+					if file[i] == '/' {
+						short = file[i+1:]
+						break
+					}
+				}
+				file = short
+			}
+			event.Trace = append(event.Trace, file+":"+l)
+		}
+		ctx.dispatcher.Event.Handler(&event)
 	}
 	// 不再将传入的error返回，避免再触发handle500函数
 	return nil
